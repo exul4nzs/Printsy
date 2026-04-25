@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -48,10 +48,10 @@ export default function ProductDetailPage() {
     fetchData();
   }, [id]);
 
-  const handleDesignSave = (dataUrl: string, json: unknown) => {
+  const handleDesignSave = useCallback((dataUrl: string, json: unknown) => {
     setDesignData({ dataUrl, json });
     setCustomerPhoto(dataUrl);
-  };
+  }, []);
 
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) return;

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
@@ -8,7 +9,11 @@ import { formatPrice } from '@/lib/utils';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, total, itemCount } = useCartStore();
+  const { items, removeItem, updateQuantity } = useCartStore();
+
+  // Calculate totals directly from items (Zustand getters don't work well with destructuring)
+  const total = useMemo(() => items.reduce((sum, item) => sum + item.total_price, 0), [items]);
+  const itemCount = useMemo(() => items.reduce((count, item) => count + item.quantity, 0), [items]);
 
   return (
     <div className="min-h-screen bg-off-white">

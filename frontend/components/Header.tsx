@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCartStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const itemCount = useCartStore((state) => state.itemCount);
+  const items = useCartStore((state) => state.items);
+  const itemCount = useMemo(() => items.reduce((count, item) => count + item.quantity, 0), [items]);
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-warm-gray-200">
