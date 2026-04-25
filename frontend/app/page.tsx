@@ -110,11 +110,32 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {products.length === 0 ? (
-                // Placeholder Products
+                // Placeholder Products based on user screenshots
                 [
-                  { id: 'p1', name: 'Standard Photo Print (4R)', description: 'The classic size for your cherished memories.', base_price: 10, product_type: 'photo_print' },
-                  { id: 'p2', name: 'Large Photo Print (8R)', description: 'Make a statement with a larger format.', base_price: 35, product_type: 'photo_print' },
-                  { id: 'p3', name: 'Document / A4 Print', description: 'Perfect for certificates or large photos.', base_price: 50, product_type: 'photo_print' }
+                  { 
+                    id: 'p1', 
+                    name: 'Mini Album Keychain', 
+                    description: 'A pocket-sized memory you can carry anywhere. Perfect for family photos.', 
+                    base_price: 150, 
+                    product_type: 'photo_print',
+                    thumbnail: '/keychain.png'
+                  },
+                  { 
+                    id: 'p2', 
+                    name: 'Standard Photo Prints (4R)', 
+                    description: 'High-quality glossy prints for your photo albums.', 
+                    base_price: 10, 
+                    product_type: 'photo_print',
+                    thumbnail: '/prints.png'
+                  },
+                  { 
+                    id: 'p3', 
+                    name: 'Large Format Print (A4)', 
+                    description: 'Beautiful large prints for framing or gifting.', 
+                    base_price: 50, 
+                    product_type: 'photo_print',
+                    thumbnail: '/logo.png' // Using logo as a temporary placeholder for A4
+                  }
                 ].map((p) => (
                   <ProductCard key={p.id} product={p as any} />
                 ))
