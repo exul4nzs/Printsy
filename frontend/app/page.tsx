@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
+import SeasonalProductCard from '@/components/SeasonalProductCard';
+import CustomerAvatarStack from '@/components/CustomerAvatarStack';
+import TestimonialsSection from '@/components/TestimonialsSection';
 import { Product } from '@/types';
 import { getProducts } from '@/lib/api';
 import { Loader2, Camera, Star, ShieldCheck, Facebook, Send } from 'lucide-react';
@@ -83,14 +86,7 @@ export default function Home() {
                 Choose from a variety of professional photo sizes. Every print is handled with care.
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-warm-gray-200" />
-                ))}
-              </div>
-              <span className="text-sm font-bold text-warm-gray-500">100+ Happy Customers</span>
-            </div>
+            <CustomerAvatarStack count={4} />
           </div>
 
           {loading ? (
@@ -110,39 +106,34 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {products.length === 0 ? (
-                // Placeholder Products based on user screenshots
-                [
-                  { 
+                // Placeholder Products + Dynamic Seasonal Card
+                <>
+                  <ProductCard product={{
                     id: 'p1', 
                     name: 'Mini Album Keychain', 
                     description: 'A pocket-sized memory you can carry anywhere. Perfect for family photos.', 
                     base_price: 150, 
                     product_type: 'photo_print',
                     thumbnail: '/keychain.png'
-                  },
-                  { 
+                  } as any} />
+                  <ProductCard product={{
                     id: 'p2', 
                     name: 'Standard Photo Prints (4R)', 
                     description: 'High-quality glossy prints for your photo albums.', 
                     base_price: 10, 
                     product_type: 'photo_print',
                     thumbnail: '/prints.png'
-                  },
-                  { 
-                    id: 'p3', 
-                    name: 'Large Format Print (A4)', 
-                    description: 'Beautiful large prints for framing or gifting.', 
-                    base_price: 50, 
-                    product_type: 'photo_print',
-                    thumbnail: '/logo.png' // Using logo as a temporary placeholder for A4
-                  }
-                ].map((p) => (
-                  <ProductCard key={p.id} product={p as any} />
-                ))
+                  } as any} />
+                  <SeasonalProductCard />
+                </>
               ) : (
-                products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))
+                // API Products + Dynamic Seasonal Card
+                <>
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                  <SeasonalProductCard />
+                </>
               )}
             </div>
           )}
@@ -179,6 +170,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       {/* Footer */}
       <footer className="bg-warm-gray-900 text-white py-20">

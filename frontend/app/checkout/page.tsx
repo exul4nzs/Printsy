@@ -8,9 +8,14 @@ import { formatPrice } from '@/lib/utils';
 import { Loader2, Check, Send, Smartphone, AlertTriangle, MapPin } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { items, total, clearCart } = useCartStore();
+  const { items, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+
+  // Calculate total directly from items (Zustand getter doesn't work well with destructuring)
+  const total = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.total_price, 0);
+  }, [items]);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -38,7 +43,8 @@ export default function CheckoutPage() {
     return encodeURIComponent(lines.join('\n'));
   }, [items, total, formData]);
 
-  const telegramLink = `https://t.me/hercheysss15?text=${telegramMessage}`;
+  const telegramUsername = process.env.NEXT_PUBLIC_TELEGRAM_USERNAME || 'hercheysss15';
+  const telegramLink = `https://t.me/${telegramUsername}?text=${telegramMessage}`;
 
   const handlePlaceOrder = async () => {
     if (!formData.customer_name || !formData.customer_contact) return;
@@ -50,7 +56,7 @@ export default function CheckoutPage() {
     clearCart();
   };
 
-  const gcashNumber = '09XX XXX XXXX'; // TODO: replace with actual GCash number
+  const gcashNumber = process.env.NEXT_PUBLIC_GCASH_NUMBER || '09XX XXX XXXX';
 
   if (items.length === 0 && !orderComplete) {
     return (
