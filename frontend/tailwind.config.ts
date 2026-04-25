@@ -26,14 +26,14 @@ const config: Config = {
         'soft-beige': '#f5f0e8',
         // Vibrant accent (teal)
         accent: {
-          DEFAULT: '#f9d5d3', // Printsy Pink
+          DEFAULT: '#e07a75', // Printsy Pink — darker for readability
           50: '#fff1f1',
           100: '#ffe4e3',
           200: '#f9d5d3',
           300: '#f4b9b6',
           400: '#ee928e',
-          500: '#f9d5d3',
-          600: '#e5b8b6',
+          500: '#e07a75',
+          600: '#c45a55',
           700: '#6b4f4f', // Printsy Brown
           800: '#5a4242',
           900: '#4a3636',
