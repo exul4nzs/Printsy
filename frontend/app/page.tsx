@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
 import { getProducts } from '@/lib/api';
-import { Loader2, Camera, Star, ShieldCheck } from 'lucide-react';
+import { Loader2, Camera, Star, ShieldCheck, Facebook, Send } from 'lucide-react';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -209,11 +209,25 @@ export default function Home() {
           </div>
           <div className="pt-12 border-t border-warm-gray-800 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-warm-gray-400 text-sm font-medium">
-              © 2024 Printsy by Hercheys. All rights reserved.
+              © 2026 Printsy by Hercheys. All rights reserved.
             </p>
-            <div className="flex gap-8">
-              <a href="#" className="text-warm-gray-400 hover:text-white transition-colors">FB</a>
-              <a href="#" className="text-warm-gray-400 hover:text-white transition-colors">TG</a>
+            <div className="flex gap-6">
+              <a 
+                href="https://www.facebook.com/profile.php?id=61581537887386" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-warm-gray-400 hover:text-accent transition-all hover:scale-110"
+              >
+                <Facebook className="w-6 h-6" />
+              </a>
+              <a 
+                href="https://t.me/hercheysss15" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-warm-gray-400 hover:text-accent transition-all hover:scale-110"
+              >
+                <Send className="w-6 h-6" />
+              </a>
             </div>
           </div>
         </div>
