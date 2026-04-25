@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
+  <defs>
+    <linearGradient id="shirt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8e4df"/>
+      <stop offset="100%" style="stop-color:#d4cec6"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#shirt)" stroke="#b8b0a6" stroke-width="3"
+    d="M120 68 L80 108 L80 140 L100 150 L100 420 Q100 450 130 450 L270 450 Q300 450 300 420 L300 150 L320 140 L320 108 L280 68 Q200 95 120 68 Z"/>
+  <path fill="none" stroke="#a09890" stroke-width="2"
+    d="M140 68 Q200 120 260 68"/>
+  <rect x="130" y="180" width="140" height="160" rx="8" fill="#c8c2ba" opacity="0.35"/>
+</svg>

@@ -1,0 +1,39 @@
+{
+  "name": "custom-print-studio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@stripe/react-stripe-js": "^3.4.0",
+    "@stripe/stripe-js": "^5.10.0",
+    "axios": "^1.8.4",
+    "clsx": "^2.1.1",
+    "fabric": "^7.2.0",
+    "lucide-react": "^0.487.0",
+    "next": "^15.5.15",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.1.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.6",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.23.0",
+    "eslint-config-next": "15.5.14",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2"
+  },
+  "overrides": {
+    "tar": "^7.0.1",
+    "glob": "^11.0.1"
+  }
+}

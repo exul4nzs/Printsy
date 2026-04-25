@@ -1,0 +1,36 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/.env
+*.sqlite3
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Django user uploads (keep structure optional — uncomment if you never want media in git)
+backend/media/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.local
+frontend/.env*.local
+npm-debug.log*
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+.cursor/
