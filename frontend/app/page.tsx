@@ -107,15 +107,22 @@ export default function Home() {
                 Try Again
               </button>
             </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-24 bg-white rounded-3xl shadow-xl border border-warm-gray-100">
-              <p className="text-warm-gray-500 font-medium text-lg">No print products available yet.</p>
-            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {products.length === 0 ? (
+                // Placeholder Products
+                [
+                  { id: 'p1', name: 'Standard Photo Print (4R)', description: 'The classic size for your cherished memories.', base_price: 10, product_type: 'photo_print' },
+                  { id: 'p2', name: 'Large Photo Print (8R)', description: 'Make a statement with a larger format.', base_price: 35, product_type: 'photo_print' },
+                  { id: 'p3', name: 'Document / A4 Print', description: 'Perfect for certificates or large photos.', base_price: 50, product_type: 'photo_print' }
+                ].map((p) => (
+                  <ProductCard key={p.id} product={p as any} />
+                ))
+              ) : (
+                products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))
+              )}
             </div>
           )}
         </div>
