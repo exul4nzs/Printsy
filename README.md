@@ -34,6 +34,24 @@ Printsy is a specialized photo printing platform built with Next.js and Django. 
 2. Install dependencies: `npm install`.
 3. Start the dev server: `npm run dev`.
 
+## 🖼️ Managing Images
+
+To add real images to your products (instead of placeholders):
+
+### 1. Using the Django Admin (Recommended)
+1. Create a superuser: `python manage.py createsuperuser` in the `backend` folder.
+2. Go to `http://localhost:8000/admin`.
+3. Select **Products** and click on a product (like "Mini Album Keychain").
+4. Upload a **Thumbnail** and **Mockup Image**. These will automatically sync to the frontend gallery.
+
+### 2. Replacing Placeholders
+The "Explore Gallery" currently uses placeholders from the `frontend/public/` folder:
+- `keychain.png` (Mini Album Keychain)
+- `prints.png` (Standard Prints)
+- `logo.png` (Default backup)
+
+You can simply overwrite these files with your own `.png` images to update the landing page immediately!
+
 ## 📍 Contact
 Based in Surigao City.
 Facebook: Printsy

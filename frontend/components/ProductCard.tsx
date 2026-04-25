@@ -19,8 +19,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-warm-gray-100">
-            <div className="w-20 h-20 bg-warm-gray-200 rounded-xl" />
+          <div className="w-full h-full flex items-center justify-center bg-accent/5">
+             <Image
+              src="/logo.png"
+              alt="Placeholder"
+              width={120}
+              height={120}
+              className="opacity-20 grayscale"
+            />
           </div>
         )}
       </div>

@@ -15,11 +15,13 @@ def seed():
             "description": "A pocket-sized memory you can carry anywhere. Perfect for family photos.",
             "base_price": 150.00,
             "product_type": "photo_print",
+            "thumbnail": "products/keychain.png",
             "config": {"canvas_width": 500, "canvas_height": 500}
         }
     )
     if not created:
         k.base_price = 150.00
+        k.thumbnail = "products/keychain.png"
         k.save()
 
     PhotoPrintVariant.objects.get_or_create(
@@ -35,9 +37,13 @@ def seed():
             "description": "High-quality glossy or matte prints for your memories.",
             "base_price": 10.00,
             "product_type": "photo_print",
+            "thumbnail": "products/prints.png",
             "config": {"canvas_width": 1000, "canvas_height": 1000}
         }
     )
+    if not created:
+        p.thumbnail = "products/prints.png"
+        p.save()
     
     sizes = [
         ('2x3', 5.00),
@@ -58,7 +64,7 @@ def seed():
             }
         )
 
-    print("Printsy seeded with Mini Album Keychain and Photo Prints!")
+    print("Printsy seeded with REAL IMAGES for Mini Album Keychain and Photo Prints!")
 
 if __name__ == "__main__":
     seed()
