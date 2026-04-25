@@ -88,51 +88,31 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Order.objects.none()
     
     def create(self, request):
-        """Create a new order with payment intent."""
+        """Create a new order (manual GCash flow)."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Calculate total from items
         items = serializer.validated_data.get('items', [])
         total = sum(
-            float(item.get('total_price', 0)) 
+            float(item.get('total_price', 0))
             for item in items
         )
-        
+
         # Create order
         order = Order.objects.create(
             customer_name=serializer.validated_data['customer_name'],
-            customer_email=serializer.validated_data['customer_email'],
-            customer_phone=serializer.validated_data['customer_phone'],
-            shipping_address=serializer.validated_data['shipping_address'],
+            customer_email=serializer.validated_data.get('customer_email', ''),
+            customer_phone=serializer.validated_data.get('customer_phone', ''),
+            shipping_address=serializer.validated_data.get('shipping_address', ''),
             items=items,
             total_amount=total
         )
-        
-        # Create Stripe PaymentIntent
-        try:
-            payment_intent = stripe.PaymentIntent.create(
-                amount=int(total * 100),  # Convert to cents
-                currency='php',  # Philippine Peso for GCash
-                payment_method_types=['card', 'gcash'],
-                metadata={'order_id': str(order.id)}
-            )
-            
-            order.stripe_payment_intent_id = payment_intent.id
-            order.save()
-            
-            return Response({
-                'order': self.get_serializer(order).data,
-                'client_secret': payment_intent.client_secret
-            }, status=status.HTTP_201_CREATED)
-            
-        except stripe.error.StripeError as e:
-            # Delete the order if payment intent creation fails
-            order.delete()
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
+        return Response(
+            self.get_serializer(order).data,
+            status=status.HTTP_201_CREATED
+        )
     
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):

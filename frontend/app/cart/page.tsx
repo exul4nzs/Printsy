@@ -61,14 +61,21 @@ export default function CartPage() {
                       {item.product.name}
                     </h3>
                     {item.variant && (
-                      <p className="text-sm text-warm-gray-600 mt-1">
-                        Size: {item.variant.size} | Color: {item.variant.color}
+                      <p className="text-xs text-warm-gray-500">
+                        {item.variant.size}
                       </p>
                     )}
-                    {item.design && (
-                      <p className="text-sm text-accent mt-1">
-                        Custom design included
-                      </p>
+                    {item.customerPhotos && item.customerPhotos.length > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        {item.customerPhotos.map((photo, idx) => (
+                          <img
+                            key={idx}
+                            src={photo}
+                            alt={`Uploaded photo ${idx + 1}`}
+                            className="w-12 h-12 rounded-lg object-cover border border-warm-gray-200"
+                          />
+                        ))}
+                      </div>
                     )}
                     
                     <div className="flex items-center justify-between mt-3">

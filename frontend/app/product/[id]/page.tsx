@@ -18,6 +18,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<PhotoPrintVariant | null>(null);
   const [designData, setDesignData] = useState<{ dataUrl: string; json: unknown } | null>(null);
+  const [customerPhoto, setCustomerPhoto] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showAdded, setShowAdded] = useState(false);
   
@@ -49,6 +50,7 @@ export default function ProductDetailPage() {
 
   const handleDesignSave = (dataUrl: string, json: unknown) => {
     setDesignData({ dataUrl, json });
+    setCustomerPhoto(dataUrl);
   };
 
   const handleAddToCart = async () => {
@@ -76,6 +78,7 @@ export default function ProductDetailPage() {
       quantity: 1,
       unit_price: selectedVariant.total_price,
       total_price: selectedVariant.total_price,
+      customerPhotos: customerPhoto ? [customerPhoto] : undefined,
     });
 
     setSaving(false);

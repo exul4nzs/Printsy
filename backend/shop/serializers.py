@@ -65,17 +65,22 @@ class OrderItemSerializer(serializers.Serializer):
     unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     design_preview_url = serializers.URLField(required=False, allow_blank=True)
+    customer_photos = serializers.ListField(child=serializers.CharField(), required=False)
 
 
 class OrderSerializer(serializers.ModelSerializer):
     """Serializer for orders."""
     items = OrderItemSerializer(many=True)
     
+    customer_email = serializers.EmailField(required=False, allow_blank=True)
+    customer_phone = serializers.CharField(required=False, allow_blank=True)
+    shipping_address = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = Order
         fields = ['id', 'customer_name', 'customer_email', 'customer_phone',
                   'shipping_address', 'items', 'total_amount', 'status',
-                  'stripe_payment_intent_id', 'tracking_number', 
+                  'stripe_payment_intent_id', 'tracking_number',
                   'created_at', 'updated_at']
         read_only_fields = ['status', 'stripe_payment_intent_id', 'tracking_number']
     
