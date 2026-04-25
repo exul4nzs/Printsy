@@ -25,7 +25,7 @@ Printsy is a specialized photo printing platform built with Next.js and Django. 
 
 ![Printsy Website Screenshot](assets/image.png)
 
-[📹 Watch Demo Video](assets/Printsy_demo.mp4)
+![Printsy Demo](assets/demo.gif)
 
 ## 📍 Contact
 Based in Surigao City.
