@@ -1,80 +1,56 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import { useCartStore } from '@/lib/store';
-import { createOrder } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
-import { Loader2, Check, AlertCircle } from 'lucide-react';
-
-// Stripe imports would go here for actual integration
-// import { loadStripe } from '@stripe/stripe-js';
+import { Loader2, Check, Send, Smartphone, AlertTriangle, MapPin } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { items, total, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [orderComplete, setOrderComplete] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     customer_name: '',
-    customer_email: '',
-    customer_phone: '',
-    shipping_address: '',
+    customer_contact: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Build the Telegram message with order summary
+  const telegramMessage = useMemo(() => {
+    if (!formData.customer_name) return '';
+    const lines = [
+      `Hi! I would like to place an order with Printsy.`,
+      ``,
+      `Name: ${formData.customer_name}`,
+      `Contact: ${formData.customer_contact}`,
+      ``,
+      `Order Details:`
+    ];
+    items.forEach((item) => {
+      lines.push(
+        `- ${item.product.name} (${item.variant?.size || 'Standard'}) x${item.quantity} = ${formatPrice(item.total_price)}`
+      );
+    });
+    lines.push(`\nTotal: ${formatPrice(total)}`);
+    lines.push(`\nI have sent my photos and proof of payment via GCash. 💕📸`);
+    return encodeURIComponent(lines.join('\n'));
+  }, [items, total, formData]);
+
+  const telegramLink = `https://t.me/hercheysss15?text=${telegramMessage}`;
+
+  const handlePlaceOrder = async () => {
+    if (!formData.customer_name || !formData.customer_contact) return;
     setLoading(true);
-    setError(null);
-
-    try {
-      // Prepare order items
-      const orderItems = items.map((item) => ({
-        product_id: item.product.id,
-        product_type: item.product.product_type,
-        variant_id: item.variant?.id,
-        design_id: item.design?.id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
-        design_preview_url: item.design?.preview_image_url,
-      }));
-
-      // Create order
-      const order = await createOrder({
-        ...formData,
-        items: orderItems,
-        total_amount: total,
-      });
-
-      setOrderId(order.order.id);
-      setOrderComplete(true);
-      clearCart();
-      
-      // In a real implementation with Stripe:
-      // 1. Create payment intent
-      // 2. Redirect to Stripe checkout or show payment form
-      // 3. Handle webhook confirmation
-      
-    } catch (err) {
-      setError('Failed to create order. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // Simulate a brief loading for UX
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    setOrderComplete(true);
+    clearCart();
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const gcashNumber = '09XX XXX XXXX'; // TODO: replace with actual GCash number
 
   if (items.length === 0 && !orderComplete) {
     return (
@@ -101,22 +77,25 @@ export default function CheckoutPage() {
             <Check className="w-10 h-10 text-accent" />
           </div>
           <h2 className="text-2xl font-bold text-warm-gray-900 mb-4">
-            Order Placed Successfully!
+            Order Details Ready!
           </h2>
-          <p className="text-warm-gray-600 mb-2">
-            Thank you for your order. We&apos;ll send you an email confirmation shortly.
+          <p className="text-warm-gray-600 mb-6">
+            Your order summary has been prepared. Please send it via Telegram along with your GCash payment proof and photos.
           </p>
-          {orderId && (
-            <p className="text-sm text-warm-gray-500 mb-6">
-              Order ID: {orderId}
-            </p>
-          )}
-          <button
-            onClick={() => router.push('/')}
-            className="btn-primary"
-          >
-            Continue Shopping
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href={telegramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <Send className="w-5 h-5" />
+              Send Order on Telegram
+            </a>
+          </div>
+          <p className="text-sm text-warm-gray-500 mt-6">
+            You can also email us at <strong>printsy@example.com</strong> with your order details.
+          </p>
         </div>
       </div>
     );
@@ -125,178 +104,220 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-off-white">
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-warm-gray-900 mb-8">Checkout</h1>
 
+        {/* Disclaimers */}
+        <div className="mb-8 space-y-3">
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-800">
+              Our prints are <strong>Instax-inspired</strong>, not actual Instax film. Please send high-quality photos for the best print results.
+            </p>
+          </div>
+          <div className="flex items-start gap-3 p-4 bg-accent/10 border border-accent/20 rounded-xl">
+            <MapPin className="w-5 h-5 text-accent mt-0.5 shrink-0" />
+            <p className="text-sm text-warm-gray-700">
+              Currently serving <strong>Surigao City</strong> only. Pickup or local delivery arranged after order confirmation.
+            </p>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Customer Information Form */}
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-warm-gray-900 mb-6">
-              Customer Information
-            </h2>
-
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-700">
-                <AlertCircle className="w-5 h-5" />
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="customer_name" className="block text-sm font-medium text-warm-gray-700 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="customer_name"
-                  name="customer_name"
-                  required
-                  value={formData.customer_name}
-                  onChange={handleInputChange}
-                  className="input"
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="customer_email" className="block text-sm font-medium text-warm-gray-700 mb-1">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  id="customer_email"
-                  name="customer_email"
-                  required
-                  value={formData.customer_email}
-                  onChange={handleInputChange}
-                  className="input"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="customer_phone" className="block text-sm font-medium text-warm-gray-700 mb-1">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="customer_phone"
-                  name="customer_phone"
-                  required
-                  value={formData.customer_phone}
-                  onChange={handleInputChange}
-                  className="input"
-                  placeholder="+63 912 345 6789"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="shipping_address" className="block text-sm font-medium text-warm-gray-700 mb-1">
-                  Shipping Address *
-                </label>
-                <textarea
-                  id="shipping_address"
-                  name="shipping_address"
-                  required
-                  rows={4}
-                  value={formData.shipping_address}
-                  onChange={handleInputChange}
-                  className="input resize-none"
-                  placeholder="Street address, City, Province, ZIP code"
-                />
-              </div>
-
-              <div className="pt-4">
-                <h3 className="font-semibold text-warm-gray-900 mb-4">Payment Method</h3>
-                <div className="p-4 bg-warm-gray-50 rounded-xl border border-warm-gray-200">
-                  <p className="text-sm text-warm-gray-600 mb-2">
-                    <strong>Stripe Checkout</strong> with GCash support
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-warm-gray-500">
-                    <span className="px-2 py-1 bg-white rounded border">Visa</span>
-                    <span className="px-2 py-1 bg-white rounded border">Mastercard</span>
-                    <span className="px-2 py-1 bg-white rounded border">GCash</span>
-                  </div>
+          {/* Left Column - Customer Info & Payment */}
+          <div className="space-y-8">
+            {/* Customer Info */}
+            <div className="card p-6">
+              <h2 className="text-xl font-semibold text-warm-gray-900 mb-6">
+                Your Information
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-warm-gray-700 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customer_name}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, customer_name: e.target.value }))
+                    }
+                    className="input"
+                    placeholder="Juan Dela Cruz"
+                    required
+                  />
                 </div>
-                <p className="text-xs text-warm-gray-500 mt-2">
-                  Note: This is a demo. In production, Stripe integration would redirect to secure checkout.
-                </p>
+                <div>
+                  <label className="block text-sm font-medium text-warm-gray-700 mb-1">
+                    Phone / Telegram / Email *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customer_contact}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, customer_contact: e.target.value }))
+                    }
+                    className="input"
+                    placeholder="0912 345 6789 or @username"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* GCash Payment */}
+            <div className="card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-semibold text-warm-gray-900">
+                  Pay with GCash
+                </h2>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>Place Order - {formatPrice(total)}</>
-                )}
-              </button>
-            </form>
+              <div className="space-y-4">
+                <p className="text-sm text-warm-gray-600">
+                  Scan the QR code below or send payment to our GCash number. Screenshot your proof of payment — you will need to send it via Telegram to confirm your order.
+                </p>
+
+                {/* GCash QR Placeholder */}
+                <div className="flex flex-col items-center gap-3 p-6 bg-warm-gray-50 rounded-xl border-2 border-dashed border-warm-gray-200">
+                  <div className="relative w-48 h-48 bg-white rounded-xl flex items-center justify-center overflow-hidden">
+                    <Image
+                      src="/gcash.png"
+                      alt="GCash QR Code"
+                      fill
+                      className="object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="text-center p-4">
+                      <p className="text-sm text-warm-gray-500 font-medium">QR Code placeholder</p>
+                      <p className="text-xs text-warm-gray-400 mt-1">
+                        Drop <code>gcash.png</code> in <code>frontend/public/</code>
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-lg font-bold text-warm-gray-900">
+                    {gcashNumber}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* How to Order */}
+            <div className="card p-6">
+              <h2 className="text-xl font-semibold text-warm-gray-900 mb-4">
+                How to Complete Your Order
+              </h2>
+              <ol className="space-y-3 text-sm text-warm-gray-600 list-decimal list-inside">
+                <li>
+                  <strong>Pay via GCash</strong> — Scan the QR or send to the number above.
+                </li>
+                <li>
+                  <strong>Screenshot your proof of payment</strong> (GCash receipt).
+                </li>
+                <li>
+                  <strong>Save your photos</strong> — Make sure they are high quality for the best print results.
+                </li>
+                <li>
+                  <strong>Click "Send Order on Telegram"</strong> below to open Telegram with your order details already filled in.
+                </li>
+                <li>
+                  <strong>Attach</strong> your photos and GCash proof of payment, then send.
+                </li>
+              </ol>
+            </div>
           </div>
 
-          {/* Order Summary */}
+          {/* Right Column - Order Summary */}
           <div>
             <div className="card p-6 sticky top-24">
               <h2 className="text-xl font-semibold text-warm-gray-900 mb-4">
                 Order Summary
               </h2>
 
-              <div className="space-y-3 mb-4">
+              <div className="space-y-4 mb-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <div>
+                  <div key={item.id} className="pb-4 border-b border-warm-gray-100 last:border-0">
+                    <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium text-warm-gray-900">
                         {item.product.name}
                       </span>
-                      <span className="text-warm-gray-500 ml-2">
-                        x{item.quantity}
+                      <span className="font-medium text-warm-gray-900">
+                        {formatPrice(item.total_price)}
                       </span>
-                      {item.variant && (
-                        <p className="text-xs text-warm-gray-500">
-                          {item.variant.size}, {item.variant.color}
-                        </p>
-                      )}
                     </div>
-                    <span className="font-medium text-warm-gray-900">
-                      {formatPrice(item.total_price)}
-                    </span>
+                    <div className="flex justify-between text-xs text-warm-gray-500 mb-2">
+                      <span>
+                        {item.variant?.size || 'Standard'} × {item.quantity}
+                      </span>
+                    </div>
+                    {/* Photo previews */}
+                    {item.customerPhotos && item.customerPhotos.length > 0 && (
+                      <div className="flex gap-2">
+                        {item.customerPhotos.map((photo, idx) => (
+                          <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-warm-gray-200">
+                            <img
+                              src={photo}
+                              alt={`Photo ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-warm-gray-200 pt-4 space-y-2">
-                <div className="flex justify-between text-warm-gray-600">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(total)}</span>
-                </div>
-                <div className="flex justify-between text-warm-gray-600">
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-              </div>
-
-              <div className="border-t border-warm-gray-200 pt-4 mt-4">
+              <div className="border-t border-warm-gray-200 pt-4">
                 <div className="flex justify-between text-xl font-bold">
                   <span className="text-warm-gray-900">Total</span>
                   <span className="text-accent">{formatPrice(total)}</span>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-accent/5 rounded-xl">
-                <p className="text-sm text-warm-gray-600">
-                  <strong className="text-warm-gray-900">Secure checkout</strong>
-                  <br />
-                  Your payment information is processed securely through Stripe.
-                </p>
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={!formData.customer_name || !formData.customer_contact || loading}
+                  className={`btn-primary w-full py-4 text-lg flex items-center justify-center gap-2 ${
+                    (!formData.customer_name || !formData.customer_contact || loading) &&
+                    'opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Preparing...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      I Have Paid via GCash
+                    </>
+                  )}
+                </button>
+
+                <a
+                  href={telegramLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline w-full flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  Send Order on Telegram
+                </a>
               </div>
+
+              <p className="text-xs text-warm-gray-500 text-center mt-4">
+                By placing an order, you agree to send your photos and payment proof via Telegram or email to complete the transaction.
+              </p>
             </div>
           </div>
         </div>

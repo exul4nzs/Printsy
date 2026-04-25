@@ -81,6 +81,7 @@ export interface CartItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  customerPhotos?: string[]; // Data URLs of uploaded photos
 }
 
 export interface CartState {

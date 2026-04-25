@@ -21,38 +21,14 @@ Printsy is a specialized photo printing platform built with Next.js and Django. 
 - **Premium Aesthetics**: Clean, modern UI with a focus on photography.
 - **Secure Payments**: Integrated with Stripe for cards and local Philippine payment methods like GCash.
 
-## 🛠️ Installation
+## 🎬 Demo
 
-### Backend Setup
-1. Navigate to the `backend` directory.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Run migrations: `python manage.py migrate`.
-4. Start the server: `python manage.py runserver`.
+![Printsy Website Screenshot](assets/image.png)
 
-### Frontend Setup
-1. Navigate to the `frontend` directory.
-2. Install dependencies: `npm install`.
-3. Start the dev server: `npm run dev`.
-
-## 🖼️ Managing Images
-
-To add real images to your products (instead of placeholders):
-
-### 1. Using the Django Admin (Recommended)
-1. Create a superuser: `python manage.py createsuperuser` in the `backend` folder.
-2. Go to `http://localhost:8000/admin`.
-3. Select **Products** and click on a product (like "Mini Album Keychain").
-4. Upload a **Thumbnail** and **Mockup Image**. These will automatically sync to the frontend gallery.
-
-### 2. Replacing Placeholders
-The "Explore Gallery" currently uses placeholders from the `frontend/public/` folder:
-- `keychain.png` (Mini Album Keychain)
-- `prints.png` (Standard Prints)
-- `logo.png` (Default backup)
-
-You can simply overwrite these files with your own `.png` images to update the landing page immediately!
+[📹 Watch Demo Video](assets/Printsy_demo.mp4)
 
 ## 📍 Contact
 Based in Surigao City.
 Facebook: Printsy
 💕
+

@@ -113,9 +113,9 @@ class Order(models.Model):
     
     # Customer info (guest checkout)
     customer_name = models.CharField(max_length=200)
-    customer_email = models.EmailField()
-    customer_phone = models.CharField(max_length=20)
-    shipping_address = models.TextField()
+    customer_email = models.EmailField(blank=True, default='')
+    customer_phone = models.CharField(max_length=20, blank=True, default='')
+    shipping_address = models.TextField(blank=True, default='')
     
     # Order items stored as JSON for flexibility
     # Structure: [
@@ -133,7 +133,7 @@ class Order(models.Model):
     items = models.JSONField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     
-    # Payment
+    # Payment (manual GCash — no automated gateway)
     stripe_payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
     payment_status = models.CharField(max_length=20, default='pending')
     
