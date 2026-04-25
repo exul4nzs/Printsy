@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 60, 60, 60;
+  --background-start-rgb: 250, 250, 249;
+  --background-end-rgb: 250, 250, 249;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4bbb0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a89e90;
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Button base styles */
+.btn {
+  @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-200;
+}
+
+.btn-primary {
+  @apply btn bg-accent text-white hover:bg-accent-600 shadow-lg hover:shadow-xl;
+}
+
+.btn-secondary {
+  @apply btn bg-warm-gray-100 text-warm-gray-800 hover:bg-warm-gray-200;
+}
+
+.btn-outline {
+  @apply btn border-2 border-warm-gray-300 text-warm-gray-700 hover:border-accent hover:text-accent;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-2xl shadow-card transition-shadow duration-200;
+}
+
+.card-hover:hover {
+  @apply shadow-card-hover;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-4 py-3 bg-warm-gray-50 border border-warm-gray-200 rounded-xl 
+         focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+         transition-all duration-200;
+}
+
+/* Canvas container */
+.canvas-container {
+  @apply relative bg-white rounded-2xl shadow-card overflow-hidden;
+}
+
+.canvas-container canvas {
+  @apply w-full h-full;
+}
