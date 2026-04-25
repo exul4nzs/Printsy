@@ -55,5 +55,4 @@ You can simply overwrite these files with your own `.png` images to update the l
 ## 📍 Contact
 Based in Surigao City.
 Facebook: Printsy
-Telegram: @hercheysss15
 💕
