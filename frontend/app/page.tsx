@@ -9,11 +9,16 @@ import TestimonialsSection from '@/components/TestimonialsSection';
 import { Product } from '@/types';
 import { getProducts } from '@/lib/api';
 import { Loader2, Camera, Star, ShieldCheck, Facebook, Send } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useAuthStore } from '@/lib/store';
+import LoginModal from '@/components/auth/LoginModal';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -53,16 +58,25 @@ export default function Home() {
             </h1>
             
             <p className="text-xl text-warm-gray-600 mb-10 leading-relaxed font-medium">
-              "Print them, feel them, and make them last 💕"
+              &ldquo;Print them, feel them, and make them last 💕&rdquo;
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="#gallery"
-                className="btn-primary px-10 py-5 text-xl font-black shadow-xl hover:shadow-accent/20 transition-all hover:scale-105"
-              >
-                Explore Gallery
-              </a>
+              {!user ? (
+                <button
+                  onClick={() => setLoginModalOpen(true)}
+                  className="btn-primary px-10 py-5 text-xl font-black shadow-xl hover:shadow-accent/20 transition-all hover:scale-105"
+                >
+                  Sign in to get started
+                </button>
+              ) : (
+                <a
+                  href="#gallery"
+                  className="btn-primary px-10 py-5 text-xl font-black shadow-xl hover:shadow-accent/20 transition-all hover:scale-105"
+                >
+                  Explore Gallery
+                </a>
+              )}
               <a
                 href="#features"
                 className="btn-secondary px-10 py-5 text-xl font-bold hover:bg-warm-gray-200 transition-all"
@@ -90,8 +104,21 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-24">
-              <Loader2 className="w-12 h-12 text-accent animate-spin" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="card overflow-hidden">
+                  <Skeleton className="w-full h-48 rounded-none" />
+                  <div className="p-6">
+                    <Skeleton className="h-6 w-3/4 mb-3" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-5/6 mb-6" />
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="h-8 w-1/4" />
+                      <Skeleton className="h-10 w-24 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="text-center py-24 bg-white rounded-3xl shadow-xl border border-red-100">
@@ -181,7 +208,7 @@ export default function Home() {
             <div className="col-span-2">
               <span className="font-black text-3xl mb-6 block italic">Printsy</span>
               <p className="text-warm-gray-400 text-lg max-w-md">
-                "Where some memories deserve more than a screen. Print them, feel them, and make them last 💕"
+                &ldquo;Where some memories deserve more than a screen. Print them, feel them, and make them last 💕&rdquo;
               </p>
             </div>
             <div>
@@ -226,6 +253,11 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <LoginModal 
+        isOpen={loginModalOpen} 
+        onClose={() => setLoginModalOpen(false)} 
+      />
     </div>
   );
 }

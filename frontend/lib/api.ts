@@ -54,16 +54,21 @@ export const getDesign = async (id: string): Promise<CustomDesign> => {
 };
 
 // Orders API
-export const createOrder = async (orderData: Partial<Order>) => {
-  const response = await api.post('/orders/', orderData);
-  return response.data;
-};
+export interface CreateOrderResponse {
+  order: Order;
+  payment_info: {
+    method: string;
+    gcash_number: string;
+    gcash_name: string;
+    amount: string;
+    reference: string;
+  };
+  // Fallback fields if response shape differs
+  id?: string;
+}
 
-export const createPaymentIntent = async (amount: number, orderId?: string) => {
-  const response = await api.post('/create-payment-intent/', {
-    amount,
-    order_id: orderId,
-  });
+export const createOrder = async (orderData: Partial<Order>): Promise<CreateOrderResponse> => {
+  const response = await api.post('/orders/', orderData);
   return response.data;
 };
 

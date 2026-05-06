@@ -119,6 +119,7 @@ export interface OrderItem {
   unit_price: number;
   total_price: number;
   design_preview_url?: string;
+  customer_photos?: string[];
 }
 
 // Clipart library

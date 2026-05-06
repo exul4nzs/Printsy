@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import PhotoPrintEditor from '@/components/PhotoPrintEditor';
-import { Product, PhotoPrintVariant, PhotoPrintProduct } from '@/types';
+import { PhotoPrintVariant, PhotoPrintProduct } from '@/types';
 import { getProduct, getProductVariants, saveDesign } from '@/lib/api';
 import { useCartStore } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
@@ -19,6 +19,7 @@ export default function ProductDetailPage() {
   const [selectedVariant, setSelectedVariant] = useState<PhotoPrintVariant | null>(null);
   const [designData, setDesignData] = useState<{ dataUrl: string; json: unknown } | null>(null);
   const [customerPhoto, setCustomerPhoto] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showAdded, setShowAdded] = useState(false);
   
@@ -51,10 +52,20 @@ export default function ProductDetailPage() {
   const handleDesignSave = useCallback((dataUrl: string, json: unknown) => {
     setDesignData({ dataUrl, json });
     setCustomerPhoto(dataUrl);
+    setPhotoError(null);
+  }, []);
+
+  const handleDesignClear = useCallback(() => {
+    setDesignData(null);
+    setCustomerPhoto(null);
   }, []);
 
   const handleAddToCart = async () => {
     if (!product || !selectedVariant) return;
+    if (!customerPhoto) {
+      setPhotoError('Please upload a photo before adding this print to cart.');
+      return;
+    }
 
     setSaving(true);
     
@@ -137,6 +148,7 @@ export default function ProductDetailPage() {
             <PhotoPrintEditor
               productId={String(product.id)}
               onExport={handleDesignSave}
+              onClear={handleDesignClear}
               className="mb-6"
             />
           </div>
@@ -197,11 +209,11 @@ export default function ProductDetailPage() {
               
               <button
                 onClick={handleAddToCart}
-                disabled={!selectedVariant || saving}
+                disabled={!selectedVariant || saving || !customerPhoto}
                 className={`
                   w-full bg-accent hover:bg-accent-600 text-white py-5 rounded-2xl font-black text-xl 
                   flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all
-                  ${(!selectedVariant || saving) && 'opacity-50 cursor-not-allowed'}
+                  ${(!selectedVariant || saving || !customerPhoto) && 'opacity-50 cursor-not-allowed'}
                 `}
               >
                 {saving ? (
@@ -218,10 +230,16 @@ export default function ProductDetailPage() {
                   </>
                 )}
               </button>
+              {photoError && (
+                <p className="text-sm text-red-600 mt-3">{photoError}</p>
+              )}
+              {!photoError && !customerPhoto && (
+                <p className="text-sm text-warm-gray-500 mt-3">
+                  Upload at least one photo before adding to cart.
+                </p>
+              )}
               
-              <p className="text-xs text-warm-gray-400 text-center">
-                Free shipping on orders above P 500!
-              </p>
+
             </div>
 
             {/* Features */}

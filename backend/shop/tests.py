@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Product, ClothingVariant, Order
+from .models import Product, PhotoPrintVariant, Order, AuditLog, FeatureToggle
+from .patterns import OrderFactory, StripePaymentStrategy, PaymentContext
 import json
 
 
@@ -11,51 +12,91 @@ class ProductModelTest(TestCase):
 
     def setUp(self):
         self.product = Product.objects.create(
-            name="Test T-Shirt",
+            name="Test Photo",
             description="A test product",
-            product_type="clothing",
+            product_type="photo_print",
             base_price=29.99,
-            config={"sizes": ["S", "M", "L"]}
+            config={"sizes": ["4R", "5R"]}
         )
 
     def test_product_creation(self):
         """Test that a product can be created."""
-        self.assertEqual(self.product.name, "Test T-Shirt")
-        self.assertEqual(self.product.product_type, "clothing")
+        self.assertEqual(self.product.name, "Test Photo")
+        self.assertEqual(self.product.product_type, "photo_print")
         self.assertTrue(self.product.is_active)
 
     def test_product_str(self):
         """Test product string representation."""
-        self.assertEqual(str(self.product), "Test T-Shirt (Clothing)")
+        self.assertEqual(str(self.product), "Test Photo (Photo Print)")
 
 
-class ClothingVariantModelTest(TestCase):
-    """Test ClothingVariant model."""
+class PhotoPrintVariantModelTest(TestCase):
+    """Test PhotoPrintVariant model."""
 
     def setUp(self):
         self.product = Product.objects.create(
-            name="Test T-Shirt",
-            product_type="clothing",
-            base_price=29.99
+            name="Test Photo",
+            product_type="photo_print",
+            base_price=5.00
         )
-        self.variant = ClothingVariant.objects.create(
+        self.variant = PhotoPrintVariant.objects.create(
             product=self.product,
-            size="M",
-            color="Black",
-            price_adjustment=0.00,
-            stock_quantity=10
+            size="4R",
+            price_adjustment=2.00,
+            stock_quantity=100
         )
 
     def test_variant_creation(self):
         """Test that a variant can be created."""
-        self.assertEqual(self.variant.size, "M")
-        self.assertEqual(self.variant.color, "Black")
-        self.assertEqual(self.variant.stock_quantity, 10)
+        self.assertEqual(self.variant.size, "4R")
+        self.assertEqual(self.variant.stock_quantity, 100)
 
     def test_variant_price(self):
         """Test variant price calculation."""
-        expected_price = 29.99 + 0.00
+        expected_price = 5.00 + 2.00
         self.assertEqual(float(self.variant.total_price), expected_price)
+
+
+class PatternAndEventTest(TestCase):
+    """Test Design Patterns and Event-Driven Architecture."""
+
+    def test_order_factory(self):
+        """Test Factory Pattern for Order Creation."""
+        data = {
+            "customer_name": "Jane Doe",
+            "items": [{"total_price": "10.00"}, {"total_price": "15.00"}]
+        }
+        order = OrderFactory.create_order(data)
+        self.assertEqual(order.customer_name, "Jane Doe")
+        self.assertEqual(float(order.total_amount), 25.00)
+
+    def test_audit_log_observer(self):
+        """Test Observer Pattern via Django Signals for Audit Logs."""
+        # Creating an order should trigger an audit log
+        order = Order.objects.create(
+            customer_name="John Log",
+            items=[],
+            total_amount=0.00,
+            status="pending"
+        )
+        logs = AuditLog.objects.filter(order=order)
+        self.assertEqual(logs.count(), 1)
+        self.assertEqual(logs.first().action, "Order Created")
+
+        # Updating status should trigger another log
+        order.status = "paid"
+        order.save()
+        
+        logs = AuditLog.objects.filter(order=order).order_by('-created_at')
+        self.assertEqual(logs.count(), 3)  # Status Updated + Payment Confirmed
+        self.assertEqual(logs[0].action, "Payment Confirmed")
+        self.assertEqual(logs[1].action, "Status Updated")
+
+    def test_feature_toggle(self):
+        """Test Feature Toggles."""
+        toggle = FeatureToggle.objects.create(name="express_delivery", is_active=True)
+        self.assertTrue(toggle.is_active)
+        self.assertEqual(str(toggle), "express_delivery (ON)")
 
 
 class ProductAPITest(APITestCase):
@@ -63,17 +104,16 @@ class ProductAPITest(APITestCase):
 
     def setUp(self):
         self.product = Product.objects.create(
-            name="Test T-Shirt",
+            name="Test Photo",
             description="API test product",
-            product_type="clothing",
-            base_price=29.99
+            product_type="photo_print",
+            base_price=5.00
         )
-        ClothingVariant.objects.create(
+        PhotoPrintVariant.objects.create(
             product=self.product,
-            size="M",
-            color="Black",
-            price_adjustment=0.00,
-            stock_quantity=10
+            size="4R",
+            price_adjustment=2.00,
+            stock_quantity=100
         )
 
     def test_list_products(self):
@@ -88,7 +128,7 @@ class ProductAPITest(APITestCase):
     def test_filter_products_by_type(self):
         """Test filtering products by type."""
         url = reverse('product-list')
-        response = self.client.get(url, {'type': 'clothing'})
+        response = self.client.get(url, {'type': 'photo_print'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Handle paginated response
         results = response.data.get('results', response.data)
@@ -99,7 +139,7 @@ class ProductAPITest(APITestCase):
         url = reverse('product-detail', kwargs={'pk': self.product.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], "Test T-Shirt")
+        self.assertEqual(response.data['name'], "Test Photo")
 
     def test_get_product_variants(self):
         """Test GET /api/products/<id>/variants/."""
@@ -123,14 +163,14 @@ class OrderAPITest(APITestCase):
             "items": [
                 {
                     "product_id": "test-product-id",
-                    "product_type": "clothing",
+                    "product_type": "photo_print",
                     "variant_id": "test-variant-id",
                     "quantity": 2,
-                    "unit_price": 29.99,
-                    "total_price": 59.98
+                    "unit_price": 7.00,
+                    "total_price": 14.00
                 }
             ],
-            "total_amount": 59.98
+            "total_amount": 14.00
         }
         response = self.client.post(url, data, format='json')
         # Should create order (may fail on Stripe if no key, but tests structure)

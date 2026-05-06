@@ -2,15 +2,21 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { useCartStore } from '@/lib/store';
+import { useCartStore, useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import LoginModal from './auth/LoginModal';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  
   const items = useCartStore((state) => state.items);
   const itemCount = useMemo(() => items.reduce((count, item) => count + item.quantity, 0), [items]);
+  
+  const { user, logout } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-warm-gray-200">
@@ -50,6 +56,44 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            {user ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className="flex items-center gap-2 font-medium text-warm-gray-600 hover:text-accent transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center font-bold">
+                    {user.first_name ? user.first_name[0].toUpperCase() : user.username[0].toUpperCase()}
+                  </div>
+                </button>
+                
+                {profileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-warm-gray-100 py-2">
+                    <div className="px-4 py-2 border-b border-warm-gray-100 mb-2">
+                      <p className="font-semibold text-sm truncate">{user.username}</p>
+                      <p className="text-xs text-warm-gray-500 truncate">{user.email}</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        logout();
+                        setProfileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setLoginModalOpen(true)}
+                className="px-5 py-2 rounded-full bg-warm-gray-900 text-white font-medium hover:bg-warm-gray-800 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -91,6 +135,11 @@ export default function Header() {
           </nav>
         </div>
       </div>
+
+      <LoginModal 
+        isOpen={loginModalOpen} 
+        onClose={() => setLoginModalOpen(false)} 
+      />
     </header>
   );
 }

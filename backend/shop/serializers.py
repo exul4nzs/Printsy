@@ -57,22 +57,22 @@ class CustomDesignSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.Serializer):
     """Serializer for individual order items (nested in Order)."""
-    product_id = serializers.UUIDField()
-    product_type = serializers.CharField()
-    variant_id = serializers.UUIDField(required=False, allow_null=True)
-    design_id = serializers.UUIDField(required=False, allow_null=True)
-    quantity = serializers.IntegerField(min_value=1)
-    unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    design_preview_url = serializers.URLField(required=False, allow_blank=True)
-    customer_photos = serializers.ListField(child=serializers.CharField(), required=False)
+    product_id = serializers.CharField(required=False, allow_blank=True)
+    product_type = serializers.CharField(required=False, allow_blank=True)
+    variant_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    design_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    quantity = serializers.IntegerField(min_value=1, default=1)
+    unit_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
+    design_preview_url = serializers.CharField(required=False, allow_blank=True)
+    customer_photos = serializers.ListField(child=serializers.CharField(), required=False, default=list)
 
 
 class OrderSerializer(serializers.ModelSerializer):
     """Serializer for orders."""
     items = OrderItemSerializer(many=True)
     
-    customer_email = serializers.EmailField(required=False, allow_blank=True)
+    customer_email = serializers.CharField(required=False, allow_blank=True)
     customer_phone = serializers.CharField(required=False, allow_blank=True)
     shipping_address = serializers.CharField(required=False, allow_blank=True)
 
@@ -80,11 +80,18 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'customer_name', 'customer_email', 'customer_phone',
                   'shipping_address', 'items', 'total_amount', 'status',
-                  'stripe_payment_intent_id', 'tracking_number',
+                  'payment_status', 'stripe_payment_intent_id', 'tracking_number',
                   'created_at', 'updated_at']
-        read_only_fields = ['status', 'stripe_payment_intent_id', 'tracking_number']
+        read_only_fields = ['status', 'payment_status', 'stripe_payment_intent_id', 'tracking_number']
     
     def create(self, validated_data):
+        from decimal import Decimal
         items_data = validated_data.pop('items')
-        order = Order.objects.create(**validated_data)
+        # Convert Decimal values to float for JSON serialization
+        clean_items = []
+        for item in items_data:
+            clean_item = {k: float(v) if isinstance(v, Decimal) else v for k, v in item.items()}
+            clean_items.append(clean_item)
+        order = Order.objects.create(items=clean_items, **validated_data)
         return order
+

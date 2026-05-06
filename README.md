@@ -21,14 +21,20 @@ Printsy is a specialized photo printing platform built with Next.js and Django. 
 - **Premium Aesthetics**: Clean, modern UI with a focus on photography.
 - **Secure Payments**: Integrated with Stripe for cards and local Philippine payment methods like GCash.
 
-## 🎬 Demo
+## 🛠️ Installation
 
-![Printsy Website Screenshot](assets/image.png)
+### Backend Setup
+1. Navigate to the `backend` directory.
+2. Install dependencies: `pip install -r requirements.txt`.
+3. Run migrations: `python manage.py migrate`.
+4. Start the server: `python manage.py runserver`.
 
-![Printsy Demo](assets/demo.gif)
+### Frontend Setup
+1. Navigate to the `frontend` directory.
+2. Install dependencies: `npm install`.
+3. Start the dev server: `npm run dev`.
 
 ## 📍 Contact
 Based in Surigao City.
 Facebook: Printsy
 💕
-
