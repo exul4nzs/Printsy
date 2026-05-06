@@ -4,6 +4,10 @@
 
 Printsy is a specialized photo printing platform built with Next.js and Django. It allows users to upload high-quality photos, select custom sizes, and order professional prints with ease.
 
+![Printsy Website Screenshot](assets/image.png)
+
+![Printsy Demo](assets/demo.gif)
+
 ## 🧱 Tech Stack
 
 | Layer | Technology |
