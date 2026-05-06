@@ -7,17 +7,20 @@ import { cn } from '@/lib/utils';
 export interface PhotoPrintEditorProps {
   productId: string;
   onExport?: (dataUrl: string, json: unknown) => void;
+  onClear?: () => void;
   className?: string;
 }
 
 export default function PhotoPrintEditor({
   productId,
   onExport,
+  onClear,
   className,
 }: PhotoPrintEditorProps) {
   const [image, setImage] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = `photo-upload-${productId}`;
 
   // Notify parent of changes
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function PhotoPrintEditor({
   const clearImage = () => {
     setImage(null);
     setZoom(100);
+    onClear?.();
   };
 
   return (
@@ -75,6 +79,7 @@ export default function PhotoPrintEditor({
           </button>
         )}
         <input
+          id={inputId}
           ref={fileInputRef}
           type="file"
           accept="image/*"

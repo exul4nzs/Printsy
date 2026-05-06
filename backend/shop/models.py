@@ -19,7 +19,7 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    product_type = models.CharField(max_length=20, choices=PRODUCT_TYPES, default='clothing')
+    product_type = models.CharField(max_length=20, choices=PRODUCT_TYPES, default='photo_print')
     thumbnail = models.ImageField(upload_to='products/thumbnails/', blank=True, null=True)
     mockup_image = models.ImageField(upload_to='products/mockups/', blank=True, null=True, 
                                      help_text="Base mockup image for the editor")
@@ -37,11 +37,6 @@ class Product(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.get_product_type_display()})"
-
-
-    @property
-    def total_price(self):
-        return self.product.base_price + self.price_adjustment
 
 
 class PhotoPrintVariant(models.Model):
@@ -151,3 +146,37 @@ class Order(models.Model):
     
     def __str__(self):
         return f"Order {self.id.hex[:8]} - {self.customer_name}"
+
+
+class AuditLog(models.Model):
+    """
+    Event-driven Audit Log to track system events (Observer Pattern).
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='audit_logs', null=True, blank=True)
+    action = models.CharField(max_length=255)
+    details = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.action} at {self.created_at}"
+
+
+class FeatureToggle(models.Model):
+    """
+    Feature Toggles to dynamically enable/disable application features.
+    """
+    name = models.CharField(max_length=100, unique=True, help_text="e.g., 'express_delivery', 'gift_wrapping'")
+    is_active = models.BooleanField(default=False)
+    description = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        status = "ON" if self.is_active else "OFF"
+        return f"{self.name} ({status})"

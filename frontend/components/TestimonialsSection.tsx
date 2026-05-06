@@ -47,13 +47,8 @@ export default function TestimonialsSection() {
 
               {/* Customer info */}
               <div className="flex items-center gap-3 pt-4 border-t border-warm-gray-100">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-accent/10">
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    fill
-                    className="object-cover"
-                  />
+                <div className="relative flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-accent/10 text-accent font-bold text-lg">
+                  {testimonial.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <p className="font-semibold text-warm-gray-900 text-sm">
