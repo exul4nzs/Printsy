@@ -1,0 +1,303 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">Home</a>
+&rsaquo; <a href="{% url 'admin-dashboard' %}">Dashboard</a>
+&rsaquo; Transaction Lobby
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+.lobby-container {
+    padding: 20px;
+    max-width: 1400px;
+}
+
+.lobby-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.lobby-stat-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    border-top: 4px solid #417690;
+}
+
+.lobby-stat-card.urgent { border-top-color: #DC3545; }
+.lobby-stat-card.processing { border-top-color: #FFA500; }
+.lobby-stat-card.shipping { border-top-color: #17A2B8; }
+.lobby-stat-card.completed { border-top-color: #28A745; }
+
+.lobby-stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.lobby-stat-card .value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+}
+
+.filter-bar {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-bar a {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.filter-bar a:hover {
+    background: #417690;
+    color: white;
+}
+
+.filter-bar a.active {
+    background: #417690;
+    color: white;
+}
+
+.orders-table {
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.orders-table th {
+    background: #417690;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.orders-table tr:hover {
+    background: #f9f9f9;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending { background: #FFA500; color: white; }
+.status-paid { background: #28A745; color: white; }
+.status-processing { background: #17A2B8; color: white; }
+.status-shipped { background: #6F42C1; color: white; }
+.status-delivered { background: #28A745; color: white; }
+.status-cancelled { background: #DC3545; color: white; }
+
+.action-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #417690;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.action-btn:hover {
+    background: #2e5266;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pagination a {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.pagination a:hover {
+    background: #417690;
+    color: white;
+}
+
+.pagination .current {
+    padding: 8px 16px;
+    background: #417690;
+    color: white;
+    border-radius: 4px;
+}
+
+.customer-info {
+    font-size: 13px;
+    color: #666;
+}
+
+.amount {
+    font-weight: bold;
+    color: #333;
+    font-size: 15px;
+}
+</style>
+
+<div class="lobby-container">
+    <h1 style="margin-bottom: 25px;">📋 Transaction Lobby</h1>
+    
+    <!-- Lobby Stats -->
+    <div class="lobby-stats">
+        <div class="lobby-stat-card urgent">
+            <h3>🚨 Urgent (Pending)</h3>
+            <div class="value">{{ lobby_stats.urgent }}</div>
+        </div>
+        <div class="lobby-stat-card processing">
+            <h3>⚙️ To Process</h3>
+            <div class="value">{{ lobby_stats.processing }}</div>
+        </div>
+        <div class="lobby-stat-card shipping">
+            <h3>🚚 Shipping</h3>
+            <div class="value">{{ lobby_stats.shipping }}</div>
+        </div>
+        <div class="lobby-stat-card completed">
+            <h3>✅ Completed</h3>
+            <div class="value">{{ lobby_stats.completed }}</div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <strong>Filter by Status:</strong>
+        <a href="{% url 'admin-transactions' %}" class="{% if not status_filter %}active{% endif %}">All</a>
+        <a href="?status=pending" class="{% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+        <a href="?status=paid" class="{% if status_filter == 'paid' %}active{% endif %}">Paid</a>
+        <a href="?status=processing" class="{% if status_filter == 'processing' %}active{% endif %}">Processing</a>
+        <a href="?status=shipped" class="{% if status_filter == 'shipped' %}active{% endif %}">Shipped</a>
+        <a href="?status=delivered" class="{% if status_filter == 'delivered' %}active{% endif %}">Delivered</a>
+        <a href="?status=cancelled" class="{% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+    </div>
+
+    <!-- Orders Table -->
+    <table class="orders-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Contact</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>
+                    <strong>#{{ order.id.hex|slice:":8"|upper }}</strong>
+                </td>
+                <td>
+                    {{ order.customer_name }}
+                </td>
+                <td class="customer-info">
+                    {% if order.customer_phone %}
+                    📞 {{ order.customer_phone }}<br>
+                    {% endif %}
+                    {% if order.customer_email %}
+                    📧 {{ order.customer_email }}
+                    {% endif %}
+                </td>
+                <td class="amount">
+                    ₱{{ order.total_amount }}
+                </td>
+                <td>
+                    <span class="status-badge status-{{ order.status }}">
+                        {{ order.status|upper }}
+                    </span>
+                </td>
+                <td>
+                    {{ order.created_at|date:"M d, Y" }}<br>
+                    <small style="color: #999;">{{ order.created_at|date:"H:i" }}</small>
+                </td>
+                <td>
+                    <a href="{% url 'admin:shop_order_change' order.id %}" class="action-btn">View</a>
+                    {% if order.status == 'pending' %}
+                    <a href="{% url 'admin:shop_order_change' order.id %}" class="action-btn" style="background: #28A745;">Mark Paid</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    <h3>No orders found</h3>
+                    <p>Orders will appear here when customers place them.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if orders.has_other_pages %}
+    <div class="pagination">
+        {% if orders.has_previous %}
+        <a href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">← Previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ orders.number }} of {{ orders.paginator.num_pages }}
+        </span>
+        
+        {% if orders.has_next %}
+        <a href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

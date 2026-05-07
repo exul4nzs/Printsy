@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
       quantity: 1,
       unit_price: selectedVariant.total_price,
       total_price: selectedVariant.total_price,
-      customerPhotos: customerPhoto ? [customerPhoto] : undefined,
+      customerPhotos: design?.preview_image_url ? [design.preview_image_url] : undefined,
     });
 
     setSaving(false);
