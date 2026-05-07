@@ -38,7 +38,4 @@ Printsy is a specialized photo printing platform built with Next.js and Django. 
 2. Install dependencies: `npm install`.
 3. Start the dev server: `npm run dev`.
 
-## 📍 Contact
-Based in Surigao City.
-Facebook: Printsy
-💕
+
