@@ -2,6 +2,7 @@ services:
   - type: web
     name: printsy-backend
     runtime: python
+    rootDirectory: backend
     plan: free
     buildCommand: |
       pip install -r requirements.txt
