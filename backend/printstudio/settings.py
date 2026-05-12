@@ -154,3 +154,25 @@ if USE_S3:
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# ==========================================
+# PRODUCTION SETTINGS FOR RENDER DEPLOYMENT
+# ==========================================
+
+# Use dj-database-url for Render PostgreSQL
+import dj_database_url
+DATABASES['default'] = dj_database_url.config(
+    default=DATABASE_URL if 'DATABASE_URL' in locals() else f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+    conn_max_age=600
+)
+
+# Add WhiteNoise for static files
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Production security settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
