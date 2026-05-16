@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <span style="font-size: 4rem; display: block; margin-bottom: 1rem;">💎</span>
+        <h1 style="color: var(--primary); font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin: 0;">Printsy Admin</h1>
+        <p style="color: var(--fg-muted); font-size: 1rem; margin-top: 0.5rem;">Secure Studio Management</p>
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+    <p class="errornote" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 13px; text-align: center;">
+    {% if form.errors.items|length == 1 %}{% translate "Please correct the error below." %}{% else %}{% translate "Please correct the errors below." %}{% endif %}
+    </p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    {% for error in form.non_field_errors %}
+    <p class="errornote" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 13px; text-align: center;">
+        {{ error }}
+    </p>
+    {% endfor %}
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+      <div class="form-row" style="border: none !important; padding: 0 0 1.5rem 0 !important;">
+        {{ form.username.errors }}
+        <label for="id_username" class="required" style="display: block; margin-bottom: 8px;">{% translate 'Username' %}</label>
+        {{ form.username }}
+      </div>
+      <div class="form-row" style="border: none !important; padding: 0 0 1.5rem 0 !important;">
+        {{ form.password.errors }}
+        <label for="id_password" class="required" style="display: block; margin-bottom: 8px;">{% translate 'Password' %}</label>
+        {{ form.password }}
+        <input type="hidden" name="next" value="{{ next }}">
+      </div>
+      {% url 'admin_password_reset' as password_reset_url %}
+      {% if password_reset_url %}
+      <div class="password-reset-link" style="text-align: right; margin-bottom: 1.5rem;">
+        <a href="{{ password_reset_url }}" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">{% translate 'Forgot your password?' %}</a>
+      </div>
+      {% endif %}
+      <div class="submit-row" style="background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">
+        <input type="submit" value="{% translate 'Authenticate' %}" style="width: 100% !important; padding: 14px !important; font-size: 14px !important;">
+      </div>
+    </form>
+</div>
+
+<style>
+    /* Specific tweaks for login container */
+    #content {
+        padding: 0 !important;
+    }
+    #content-main {
+        width: 100% !important;
+    }
+    .form-row input {
+        max-width: 100% !important;
+    }
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 10px 0;
+        color: #ef4444;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
