@@ -1,303 +1,166 @@
 {% extends "admin/base_site.html" %}
-{% load static %}
+{% load i18n static %}
 
-{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
-
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">Home</a>
-&rsaquo; <a href="{% url 'admin-dashboard' %}">Dashboard</a>
-&rsaquo; Transaction Lobby
-</div>
-{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<style>
-.lobby-container {
-    padding: 20px;
-    max-width: 1400px;
-}
-
-.lobby-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.lobby-stat-card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
-    border-top: 4px solid #417690;
-}
-
-.lobby-stat-card.urgent { border-top-color: #DC3545; }
-.lobby-stat-card.processing { border-top-color: #FFA500; }
-.lobby-stat-card.shipping { border-top-color: #17A2B8; }
-.lobby-stat-card.completed { border-top-color: #28A745; }
-
-.lobby-stat-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: #666;
-    text-transform: uppercase;
-}
-
-.lobby-stat-card .value {
-    font-size: 36px;
-    font-weight: bold;
-    color: #333;
-}
-
-.filter-bar {
-    background: #fff;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.filter-bar a {
-    padding: 8px 16px;
-    background: #f0f0f0;
-    color: #333;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: all 0.3s;
-}
-
-.filter-bar a:hover {
-    background: #417690;
-    color: white;
-}
-
-.filter-bar a.active {
-    background: #417690;
-    color: white;
-}
-
-.orders-table {
-    width: 100%;
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-collapse: collapse;
-}
-
-.orders-table th,
-.orders-table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.orders-table th {
-    background: #417690;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 12px;
-}
-
-.orders-table tr:hover {
-    background: #f9f9f9;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-pending { background: #FFA500; color: white; }
-.status-paid { background: #28A745; color: white; }
-.status-processing { background: #17A2B8; color: white; }
-.status-shipped { background: #6F42C1; color: white; }
-.status-delivered { background: #28A745; color: white; }
-.status-cancelled { background: #DC3545; color: white; }
-
-.action-btn {
-    display: inline-block;
-    padding: 6px 12px;
-    background: #417690;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 12px;
-    margin-right: 5px;
-}
-
-.action-btn:hover {
-    background: #2e5266;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.pagination a {
-    padding: 8px 16px;
-    background: #f0f0f0;
-    color: #333;
-    text-decoration: none;
-    border-radius: 4px;
-}
-
-.pagination a:hover {
-    background: #417690;
-    color: white;
-}
-
-.pagination .current {
-    padding: 8px 16px;
-    background: #417690;
-    color: white;
-    border-radius: 4px;
-}
-
-.customer-info {
-    font-size: 13px;
-    color: #666;
-}
-
-.amount {
-    font-weight: bold;
-    color: #333;
-    font-size: 15px;
-}
-</style>
-
-<div class="lobby-container">
-    <h1 style="margin-bottom: 25px;">📋 Transaction Lobby</h1>
-    
-    <!-- Lobby Stats -->
-    <div class="lobby-stats">
-        <div class="lobby-stat-card urgent">
-            <h3>🚨 Urgent (Pending)</h3>
-            <div class="value">{{ lobby_stats.urgent }}</div>
+<div class="lobby-wrapper">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">Transaction Lobby</h1>
+            <p style="color: var(--fg-muted); margin: 5px 0 0 0;">Manage and process studio orders.</p>
         </div>
-        <div class="lobby-stat-card processing">
-            <h3>⚙️ To Process</h3>
-            <div class="value">{{ lobby_stats.processing }}</div>
-        </div>
-        <div class="lobby-stat-card shipping">
-            <h3>🚚 Shipping</h3>
-            <div class="value">{{ lobby_stats.shipping }}</div>
-        </div>
-        <div class="lobby-stat-card completed">
-            <h3>✅ Completed</h3>
-            <div class="value">{{ lobby_stats.completed }}</div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'admin-dashboard' %}" class="button" style="background: var(--bg-surface) !important; color: var(--fg-main) !important; border: 1px solid var(--border) !important; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Dashboard
+            </a>
         </div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <strong>Filter by Status:</strong>
-        <a href="{% url 'admin-transactions' %}" class="{% if not status_filter %}active{% endif %}">All</a>
-        <a href="?status=pending" class="{% if status_filter == 'pending' %}active{% endif %}">Pending</a>
-        <a href="?status=paid" class="{% if status_filter == 'paid' %}active{% endif %}">Paid</a>
-        <a href="?status=processing" class="{% if status_filter == 'processing' %}active{% endif %}">Processing</a>
-        <a href="?status=shipped" class="{% if status_filter == 'shipped' %}active{% endif %}">Shipped</a>
-        <a href="?status=delivered" class="{% if status_filter == 'delivered' %}active{% endif %}">Delivered</a>
-        <a href="?status=cancelled" class="{% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+    <!-- Quick Stats for Lobby -->
+    <div class="lobby-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 2rem;">
+        <div class="stat-mini" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-muted); margin-bottom: 5px;">Urgent</div>
+            <div style="font-size: 20px; font-weight: 800; color: #f59e0b;">{{ lobby_stats.urgent }}</div>
+        </div>
+        <div class="stat-mini" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-muted); margin-bottom: 5px;">Processing</div>
+            <div style="font-size: 20px; font-weight: 800; color: #3b82f6;">{{ lobby_stats.processing }}</div>
+        </div>
+        <div class="stat-mini" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-muted); margin-bottom: 5px;">In Transit</div>
+            <div style="font-size: 20px; font-weight: 800; color: #8b5cf6;">{{ lobby_stats.shipping }}</div>
+        </div>
+        <div class="stat-mini" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center;">
+            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-muted); margin-bottom: 5px;">Completed</div>
+            <div style="font-size: 20px; font-weight: 800; color: #10b981;">{{ lobby_stats.completed }}</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 2rem; display: flex; align-items: center; gap: 20px;">
+        <span style="font-size: 12px; font-weight: 700; color: var(--fg-muted); text-transform: uppercase;">Filter by Status:</span>
+        <div style="display: flex; gap: 8px;">
+            <a href="?status=" class="filter-pill {% if not status_filter %}active{% endif %}">All</a>
+            <a href="?status=pending" class="filter-pill {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="?status=paid" class="filter-pill {% if status_filter == 'paid' %}active{% endif %}">Paid</a>
+            <a href="?status=processing" class="filter-pill {% if status_filter == 'processing' %}active{% endif %}">Processing</a>
+            <a href="?status=shipped" class="filter-pill {% if status_filter == 'shipped' %}active{% endif %}">Shipped</a>
+        </div>
     </div>
 
     <!-- Orders Table -->
-    <table class="orders-table">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Contact</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>
-                    <strong>#{{ order.id.hex|slice:":8"|upper }}</strong>
-                </td>
-                <td>
-                    {{ order.customer_name }}
-                </td>
-                <td class="customer-info">
-                    {% if order.customer_phone %}
-                    📞 {{ order.customer_phone }}<br>
-                    {% endif %}
-                    {% if order.customer_email %}
-                    📧 {{ order.customer_email }}
-                    {% endif %}
-                </td>
-                <td class="amount">
-                    ₱{{ order.total_amount }}
-                </td>
-                <td>
-                    <span class="status-badge status-{{ order.status }}">
-                        {{ order.status|upper }}
-                    </span>
-                </td>
-                <td>
-                    {{ order.created_at|date:"M d, Y" }}<br>
-                    <small style="color: #999;">{{ order.created_at|date:"H:i" }}</small>
-                </td>
-                <td>
-                    <a href="{% url 'admin:shop_order_change' order.id %}" class="action-btn">View</a>
-                    {% if order.status == 'pending' %}
-                    <a href="{% url 'admin:shop_order_change' order.id %}" class="action-btn" style="background: #28A745;">Mark Paid</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px;">
-                    <h3>No orders found</h3>
-                    <p>Orders will appear here when customers place them.</p>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="module">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td style="font-family: monospace; font-weight: 700; color: var(--primary);">#{{ order.id.hex|slice:":8"|upper }}</td>
+                    <td>
+                        <div style="font-weight: 600;">{{ order.customer_name }}</div>
+                        <div style="font-size: 11px; color: var(--fg-muted);">{{ order.customer_email }}</div>
+                    </td>
+                    <td>₱{{ order.total_amount }}</td>
+                    <td>
+                        <span class="status-pill status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="font-size: 12px; color: var(--fg-muted);">{{ order.created_at|date:"M d, Y H:i" }}</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'admin:shop_order_change' order.id %}" class="action-link">Process Order <i data-lucide="chevron-right" style="width: 14px; height: 14px; margin-left: 4px;"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--fg-muted);">No orders found for this filter.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination -->
     {% if orders.has_other_pages %}
-    <div class="pagination">
+    <div class="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 2rem;">
         {% if orders.has_previous %}
-        <a href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">← Previous</a>
+            <a href="?page={{ orders.previous_page_number }}&status={{ status_filter }}" class="page-btn"><i data-lucide="chevron-left"></i></a>
         {% endif %}
         
-        <span class="current">
-            Page {{ orders.number }} of {{ orders.paginator.num_pages }}
-        </span>
-        
+        <span class="page-info">Page {{ orders.number }} of {{ orders.paginator.num_pages }}</span>
+
         {% if orders.has_next %}
-        <a href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next →</a>
+            <a href="?page={{ orders.next_page_number }}&status={{ status_filter }}" class="page-btn"><i data-lucide="chevron-right"></i></a>
         {% endif %}
     </div>
     {% endif %}
 </div>
+
+<style>
+    .filter-pill {
+        padding: 6px 14px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--fg-muted);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .filter-pill:hover, .filter-pill.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #000;
+    }
+
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .status-paid { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .status-processing { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .status-shipped { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .status-delivered { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+    .action-link {
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: transform 0.2s;
+    }
+    .action-link:hover {
+        transform: translateX(4px);
+    }
+
+    .page-btn {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+        color: var(--fg-main);
+        display: flex;
+        align-items: center;
+    }
+    .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .page-info { color: var(--fg-muted); font-size: 13px; font-weight: 500; display: flex; align-items: center; }
+</style>
 {% endblock %}
