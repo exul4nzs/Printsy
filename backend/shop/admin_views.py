@@ -3,9 +3,10 @@ Custom admin dashboard views for Printsy.
 """
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
+from django.db.models.functions import TruncDate
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from .models import Order, Product, AuditLog
 
 
@@ -61,8 +62,30 @@ def admin_dashboard(request):
     week_ago = today - timedelta(days=7)
     weekly_orders = Order.objects.filter(
         created_at__date__gte=week_ago
-    ).values('created_at__date').annotate(count=Count('id')).order_by('created_at__date')
+    ).annotate(date=TruncDate('created_at')).values('date').annotate(count=Count('id')).order_by('date')
     
+    # Process weekly orders for the chart
+    weekly_data = []
+    for entry in weekly_orders:
+        # entry['date'] might be a string in SQLite, convert or handle
+        if hasattr(entry['date'], 'strftime'):
+            date_str = entry['date'].strftime('%b %d')
+        else:
+            # It's likely a string YYYY-MM-DD from SQLite
+            try:
+                date_str = datetime.strptime(str(entry['date']), '%Y-%m-%d').strftime('%b %d')
+            except:
+                date_str = str(entry['date'])
+        
+        weekly_data.append({
+            'label': date_str,
+            'count': entry['count']
+        })
+
+    import json
+    chart_labels = json.dumps([d['label'] for d in weekly_data])
+    chart_data   = json.dumps([d['count'] for d in weekly_data])
+
     context = {
         'title': 'Printsy Dashboard',
         'stats': {
@@ -81,7 +104,8 @@ def admin_dashboard(request):
         },
         'recent_orders': recent_orders,
         'recent_logs': recent_logs,
-        'weekly_orders': weekly_orders,
+        'chart_labels': chart_labels,
+        'chart_data': chart_data,
     }
     
     return render(request, 'admin/shop/dashboard.html', context)
