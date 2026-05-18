@@ -50,57 +50,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     registerAuthTokenGetter(refreshIdToken);
   }, [refreshIdToken]);
 
+  const syncBackendSession = useCallback(
+    async (nextUser: FirebaseUser): Promise<AuthUser> => {
+      const idToken = await nextUser.getIdToken();
+      const profile = await syncSessionFromFirebase();
+      login(idToken, profile);
+      return profile;
+    },
+    [login]
+  );
+
   useEffect(() => {
     const auth = getFirebaseAuth();
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       setFirebaseUser(nextUser);
-      try {
-        if (nextUser) {
-          const idToken = await nextUser.getIdToken();
-          const profile = await syncSessionFromFirebase();
-          login(idToken, profile);
-        } else {
-          clearStore();
-        }
-      } catch {
+      if (!nextUser) {
         clearStore();
-        if (nextUser) {
-          await signOut(auth);
-        }
+        setLoading(false);
+        return;
+      }
+
+      try {
+        await syncBackendSession(nextUser);
+      } catch (error) {
+        console.error('Backend session sync failed:', error);
       } finally {
         setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, [login, clearStore]);
+  }, [clearStore, syncBackendSession]);
 
-  const loginWithEmail = useCallback(async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
-    } finally {
-      setLoading(false);
+  const completeSignIn = useCallback(async () => {
+    const auth = getFirebaseAuth();
+    const current = auth.currentUser;
+    if (!current) {
+      throw new Error('Sign-in did not complete. Please try again.');
     }
-  }, []);
 
-  const signUpWithEmail = useCallback(async (email: string, password: string) => {
-    setLoading(true);
     try {
-      await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
-    } finally {
-      setLoading(false);
+      await syncBackendSession(current);
+    } catch (error) {
+      await signOut(auth);
+      throw error;
     }
-  }, []);
+  }, [syncBackendSession]);
+
+  const loginWithEmail = useCallback(
+    async (email: string, password: string) => {
+      setLoading(true);
+      try {
+        await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+        await completeSignIn();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [completeSignIn]
+  );
+
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string) => {
+      setLoading(true);
+      try {
+        await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
+        await completeSignIn();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [completeSignIn]
+  );
 
   const loginWithGoogle = useCallback(async () => {
     setLoading(true);
     try {
       await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
+      await completeSignIn();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [completeSignIn]);
 
   const logout = useCallback(async () => {
     await signOut(getFirebaseAuth());

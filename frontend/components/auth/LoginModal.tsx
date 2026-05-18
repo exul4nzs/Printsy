@@ -2,29 +2,12 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthErrorMessage } from '@/lib/auth-errors';
 import { X, Loader2 } from 'lucide-react';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-function getAuthErrorMessage(error: unknown): string {
-  const code = (error as { code?: string })?.code;
-  switch (code) {
-    case 'auth/invalid-credential':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':
-      return 'Invalid email or password.';
-    case 'auth/email-already-in-use':
-      return 'An account with this email already exists. Try signing in.';
-    case 'auth/weak-password':
-      return 'Password must be at least 6 characters.';
-    case 'auth/popup-closed-by-user':
-      return 'Sign-in was cancelled.';
-    default:
-      return 'Something went wrong. Please try again.';
-  }
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
