@@ -2,8 +2,14 @@ import axios from 'axios';
 import { Product, PhotoPrintVariant, CustomDesign, Order } from '@/types';
 import type { AuthUser } from '@/lib/store';
 
+function resolveApiBaseUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  const trimmed = raw.replace(/\/$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseURL: resolveApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
