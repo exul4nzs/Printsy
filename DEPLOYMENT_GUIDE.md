@@ -32,10 +32,8 @@ We use Supabase for the PostgreSQL database because it is incredibly fast, offer
 4. Click **Create new project** and wait 2 minutes for it to provision.
 5. Once ready, navigate to the **Project Settings** (gear icon in the sidebar) ➡️ **Database**.
 6. Scroll down to **Connection strings**, select **URI**, and copy the connection string.
-   * *Example string:* `postgresql://postgres.[YOUR-PROJECT-ID]:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=disable`
-   * **CRITICAL:** Replace `[YOUR-PASSWORD]` with the database password you generated.
-   * **TIP:** Change the port from `6543` to `5432` and remove `?sslmode=disable` for direct, stable Django connections:
-     `postgresql://postgres.[YOUR-PROJECT-ID]:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`
+   * **Your Resolved Supabase URI:**
+     `postgresql://postgres:jTNBpRV73vVspzVa@db.qmsozstygavqtzurutkj.supabase.co:5432/postgres`
 
 ---
 
@@ -81,7 +79,7 @@ Under the same **Environment** tab, add the following key-value variables:
 | `PYTHON_VERSION` | `3.11.0` | Match local development |
 | `DEBUG` | `False` | Disables debug mode in production |
 | `SECRET_KEY` | *[Generate a random 50-character string]* | Production Django key |
-| `DATABASE_URL` | *[Your Supabase Connection String]* | e.g. `postgresql://...:5432/postgres` |
+| `DATABASE_URL` | `postgresql://postgres:jTNBpRV73vVspzVa@db.qmsozstygavqtzurutkj.supabase.co:5432/postgres` | Your pre-filled resolved Supabase DB URL |
 | `ALLOWED_HOSTS` | `printsy-backend.onrender.com` | Replace with your actual Render URL |
 | `FRONTEND_URL` | *[Your Vercel Frontend URL]* | e.g. `https://printsy.vercel.app` |
 | `FIREBASE_ACCOUNT_CREDENTIALS_PATH` | `secrets/firebase-service-account.json` | Path of your secret file |
