@@ -66,7 +66,7 @@
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td style="font-family: monospace; font-weight: 700; color: var(--primary);">#{{ order.id.hex|slice:":8"|upper }}</td>
+                    <td style="font-family: monospace; font-weight: 700; color: var(--primary);">{{ order.display_id }}</td>
                     <td>
                         <div style="font-weight: 600;">{{ order.customer_name }}</div>
                         <div style="font-size: 11px; color: var(--fg-muted);">{{ order.customer_email }}</div>
