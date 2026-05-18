@@ -18,8 +18,10 @@ class FirebaseAuthentication(BaseAuthentication):
 
         try:
             decoded = verify_firebase_token(token)
+        except RuntimeError as exc:
+            raise AuthenticationFailed(f"Firebase Admin SDK is not properly configured: {exc}") from exc
         except Exception as exc:
-            raise AuthenticationFailed('Invalid or expired Firebase token.') from exc
+            raise AuthenticationFailed(f"Invalid or expired Firebase token. Detail: {exc}") from exc
 
         user = get_or_create_user_from_firebase(decoded)
         return (user, decoded)

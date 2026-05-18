@@ -1,9 +1,21 @@
 import os
+from pathlib import Path
 
 import firebase_admin
 from firebase_admin import credentials
 
 _initialized = False
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _resolve_credentials_path() -> Path | None:
+    raw = os.getenv('FIREBASE_ACCOUNT_CREDENTIALS_PATH')
+    if not raw:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return path if path.is_file() else None
 
 
 def ensure_firebase_initialized() -> None:
@@ -11,12 +23,12 @@ def ensure_firebase_initialized() -> None:
     if _initialized:
         return
 
-    credentials_path = os.getenv('FIREBASE_ACCOUNT_CREDENTIALS_PATH')
-    if not credentials_path or not os.path.isfile(credentials_path):
+    credentials_path = _resolve_credentials_path()
+    if credentials_path is None:
         raise RuntimeError(
             'FIREBASE_ACCOUNT_CREDENTIALS_PATH must point to a service account JSON file.'
         )
 
-    cred = credentials.Certificate(credentials_path)
+    cred = credentials.Certificate(str(credentials_path))
     firebase_admin.initialize_app(cred)
     _initialized = True
