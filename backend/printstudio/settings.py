@@ -137,6 +137,9 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_ADMIN_CHAT_ID = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '')
 TELEGRAM_NOTIFICATIONS_ENABLED = os.getenv('TELEGRAM_NOTIFICATIONS_ENABLED', 'True').lower() == 'true'
 
+# Frontend URL setting
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://printszy.vercel.app')
+
 # AWS S3 settings (optional)
 USE_S3 = os.getenv('AWS_ACCESS_KEY_ID') is not None
 

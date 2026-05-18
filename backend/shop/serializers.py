@@ -19,21 +19,67 @@ class PhotoPrintVariantSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for product listing."""
     starting_price = serializers.DecimalField(source='base_price', max_digits=10, decimal_places=2)
+    thumbnail = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'starting_price', 
                   'product_type', 'thumbnail', 'is_active', 'created_at']
 
+    def get_thumbnail(self, obj):
+        if not obj.thumbnail:
+            return None
+            
+        import os
+        from django.conf import settings
+        
+        filename = os.path.basename(obj.thumbnail.name)
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'https://printszy.vercel.app')
+        if not frontend_url:
+            frontend_url = 'https://printszy.vercel.app'
+            
+        if 'keychain' in filename.lower():
+            return f"{frontend_url}/keychain.png"
+        elif 'prints' in filename.lower():
+            return f"{frontend_url}/prints.png"
+            
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.thumbnail.url)
+        return obj.thumbnail.url
+
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     photo_variants = PhotoPrintVariantSerializer(many=True, read_only=True)
+    thumbnail = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'base_price', 'product_type',
                   'thumbnail', 'mockup_image', 'config', 'is_active', 
                   'created_at', 'photo_variants']
+
+    def get_thumbnail(self, obj):
+        if not obj.thumbnail:
+            return None
+            
+        import os
+        from django.conf import settings
+        
+        filename = os.path.basename(obj.thumbnail.name)
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'https://printszy.vercel.app')
+        if not frontend_url:
+            frontend_url = 'https://printszy.vercel.app'
+            
+        if 'keychain' in filename.lower():
+            return f"{frontend_url}/keychain.png"
+        elif 'prints' in filename.lower():
+            return f"{frontend_url}/prints.png"
+            
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.thumbnail.url)
+        return obj.thumbnail.url
 
 
 class CustomDesignSerializer(serializers.ModelSerializer):
