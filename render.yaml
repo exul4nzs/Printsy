@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: printsy-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    releaseCommand: python manage.py migrate
+    startCommand: gunicorn printstudio.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: printsy-db
+          property: connectionString
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_ADMIN_CHAT_ID
+        sync: false
+      - key: TELEGRAM_NOTIFICATIONS_ENABLED
+        value: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: "*"
+
+databases:
+  - name: printsy-db
+    databaseName: printsy
+    user: printsy
+    plan: free
