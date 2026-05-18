@@ -2,84 +2,139 @@
 
 Automated log for the Firebase Authentication integration (Next.js + Django).
 
+**Auth providers:** Email/Password, Google (GitHub removed — not a dev tool).
+
 ---
 
 ## Step 1 — Safety check & initialization
 
-**Status:** Blocked — working directory is not clean. Checkpoint commit was **not** created.
+**Status:** Complete
 
-### Phase / step completed
+- Git checkpoint on branch `cursor/firebase-auth` (`de9fc70`).
+- Env templates on `cursor/firebase-env-examples`.
 
-- Git safety check performed before any Firebase code changes.
-- This log file created with initialization notes.
-- Dependency installation and implementation deferred until the tree is clean.
+---
 
-### Git status (2026-05-18)
+## Step 2 — Next.js frontend
 
-Branch: `master` (ahead of `origin/master` by 9 commits)
+**Status:** Complete
 
-**Modified (unstaged):**
+### Files created
 
-| File |
-|------|
-| `backend/.env.example` |
-| `backend/shop/models.py` |
-| `backend/shop/templates/admin/shop/dashboard.html` |
-| `backend/shop/templates/admin/shop/transaction_lobby.html` |
+| File | Purpose |
+|------|---------|
+| `frontend/lib/firebase.ts` | Client SDK init (single app instance, browser-only) |
+| `frontend/contexts/AuthContext.tsx` | Global auth state + email/Google methods |
+| `frontend/components/providers/AppProviders.tsx` | Wraps app with `AuthProvider` |
 
-**Untracked:**
+### Files modified
 
-| File |
-|------|
-| `backend/shop/migrations/0006_add_order_number.py` |
-| `frontend/.env.example` |
+| File | Change |
+|------|--------|
+| `frontend/lib/api.ts` | Bearer interceptor + `syncSessionFromFirebase()` |
+| `frontend/lib/store.ts` | Exported `AuthUser` type |
+| `frontend/components/auth/LoginModal.tsx` | Firebase email sign-in/up + Google popup |
+| `frontend/components/Header.tsx` | Uses `useAuth()` |
+| `frontend/app/layout.tsx` | `AppProviders` wrapper |
+| `frontend/package.json` | `vitest`, `test` script |
 
-### Commands executed
-
-```powershell
-Set-Location "c:\Users\exul4nzs\Documents\University\Computer Engineering\Academics\Sophomore\Software Design\Projects\Printsy"
-git status
-```
-
-### Checkpoint commit
-
-**Not run.** Per integration plan: commit or stash existing work first, then run:
+### Commands
 
 ```powershell
-git commit -am "chore: pre-firebase integration checkpoint"
+cd frontend
+npm install vitest --save-dev
+npm test
 ```
 
-### Revert plan (if needed later)
+### Errors
+
+- LoginModal JSX typos during edit — fixed via string replace (`motionlessModal` → `motionlessModal`).
+
+---
+
+## Step 3 — Django backend
+
+**Status:** Complete
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `backend/shop/firebase_app.py` | Initialize `firebase-admin` from service account path |
+| `backend/shop/firebase_auth.py` | Verify tokens, get/create `User`, serialize profile |
+| `backend/shop/authentication.py` | DRF `FirebaseAuthentication` (Bearer) |
+
+### Files modified
+
+| File | Change |
+|------|--------|
+| `backend/printstudio/settings.py` | Register `FirebaseAuthentication` first |
+| `backend/shop/views_auth.py` | Profile uses `serialize_user()` |
+| `backend/requirements.txt` | `firebase-admin>=6.5.0` |
+| `.gitignore` | Ignore `backend/secrets/` and service account JSON |
+
+### Commands
 
 ```powershell
-git reset --hard HEAD
+cd backend
+.\venv\Scripts\pip install -r requirements.txt
 ```
 
-Use only after a successful checkpoint commit if integration needs a full rollback.
+---
 
-### Configuration review (`.env.example` — no secrets)
+## Step 4 — Tests
 
-**Frontend** (`frontend/.env.example`) — already defines Firebase client keys and API base URL:
+**Status:** Complete
 
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `NEXT_PUBLIC_API_URL`
+| File | Result |
+|------|--------|
+| `frontend/lib/__tests__/api.auth.test.ts` | Pass — Bearer header attached |
+| `backend/shop/test_firebase_auth.py` | Pass — `/api/auth/user/` blocks invalid/missing tokens |
 
-**Backend** (`backend/.env.example`) — already defines:
+### Commands
 
-- `FIREBASE_ACCOUNT_CREDENTIALS_PATH` (service account JSON for `firebase-admin`)
-- `FRONTEND_URL` (CORS)
-- Standard Django settings (`SECRET_KEY`, `DATABASE_URL`, etc.)
+```powershell
+cd frontend && npm test
+cd backend && .\venv\Scripts\python.exe manage.py test shop.test_firebase_auth
+```
 
-### Errors encountered
+---
 
-None. Integration blocked intentionally until the working tree is clean.
+## Local setup (required before trying sign-in)
 
-### Next action (awaiting approval)
+### Frontend — `frontend/.env.local`
 
-1. You commit or stash the changes listed above.
-2. Confirm when the tree is clean so we can create the checkpoint commit and proceed to **Step 2** (Phase 1 dependencies + Next.js Firebase client, auth context, token interception).
+Copy from `.env.example` and paste your Firebase web config (from Console → Project settings → Your apps).
+
+### Backend — `backend/.env`
+
+```env
+FIREBASE_ACCOUNT_CREDENTIALS_PATH=secrets/firebase-service-account.json
+```
+
+1. Firebase Console → Project settings → Service accounts → **Generate new private key**
+2. Save JSON as `backend/secrets/firebase-service-account.json` (never commit)
+
+### Run locally
+
+```powershell
+# Terminal 1
+cd backend && .\venv\Scripts\python.exe manage.py runserver
+
+# Terminal 2
+cd frontend && npm run dev
+```
+
+### Firebase Console checklist
+
+- [x] Email/Password enabled
+- [x] Google enabled
+- [ ] Authorized domains include `localhost` (and production URL when deployed)
+
+---
+
+## Revert plan
+
+```powershell
+git reset --hard HEAD  # only after a checkpoint commit on this branch
+```

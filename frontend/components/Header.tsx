@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { useCartStore, useAuthStore } from '@/lib/store';
+import { useCartStore } from '@/lib/store';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import LoginModal from './auth/LoginModal';
 
@@ -16,7 +17,7 @@ export default function Header() {
   const items = useCartStore((state) => state.items);
   const itemCount = useMemo(() => items.reduce((count, item) => count + item.quantity, 0), [items]);
   
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-warm-gray-200">
@@ -75,8 +76,8 @@ export default function Header() {
                       <p className="text-xs text-warm-gray-500 truncate">{user.email}</p>
                     </div>
                     <button 
-                      onClick={() => {
-                        logout();
+                      onClick={async () => {
+                        await logout();
                         setProfileMenuOpen(false);
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"

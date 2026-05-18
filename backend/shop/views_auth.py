@@ -1,10 +1,11 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+
+from .firebase_auth import serialize_user
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -28,14 +29,7 @@ def login_view(request):
     
     return Response({
         'token': token.key,
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_staff': user.is_staff,
-        }
+        'user': serialize_user(user),
     })
 
 @api_view(['GET'])
@@ -44,12 +38,4 @@ def user_profile_view(request):
     """
     Returns the authenticated user's profile info.
     """
-    user = request.user
-    return Response({
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'is_staff': user.is_staff,
-    })
+    return Response(serialize_user(request.user))
