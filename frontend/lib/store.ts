@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem, CartState } from '@/types';
 
-interface User {
+export interface AuthUser {
   id: number;
   username: string;
   email: string;
@@ -12,9 +12,10 @@ interface User {
 }
 
 interface AuthState {
+  /** Firebase ID token sent as Bearer to Django */
   token: string | null;
-  user: User | null;
-  login: (token: string, user: User) => void;
+  user: AuthUser | null;
+  login: (token: string, user: AuthUser) => void;
   logout: () => void;
 }
 

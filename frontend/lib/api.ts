@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Product, PhotoPrintVariant, CustomDesign, Order } from '@/types';
+import type { AuthUser } from '@/lib/store';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
@@ -7,6 +8,26 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+let authTokenGetter: (() => Promise<string | null>) | null = null;
+
+export function registerAuthTokenGetter(getter: () => Promise<string | null>): void {
+  authTokenGetter = getter;
+}
+
+api.interceptors.request.use(async (config) => {
+  if (!authTokenGetter) return config;
+  const token = await authTokenGetter();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export async function syncSessionFromFirebase(): Promise<AuthUser> {
+  const response = await api.get<AuthUser>('/auth/user/');
+  return response.data;
+}
 
 // Products API
 export const getProducts = async (type?: string): Promise<Product[]> => {

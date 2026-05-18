@@ -117,6 +117,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'shop.authentication.FirebaseAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
