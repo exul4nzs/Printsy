@@ -105,6 +105,7 @@ class Order(models.Model):
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order_number = models.PositiveIntegerField(unique=True, null=True, blank=True, editable=False)
     
     # Customer info (guest checkout)
     customer_name = models.CharField(max_length=200)
@@ -144,8 +145,19 @@ class Order(models.Model):
     class Meta:
         ordering = ['-created_at']
     
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            last = Order.objects.order_by('-order_number').filter(order_number__isnull=False).first()
+            self.order_number = (last.order_number + 1) if last else 1001
+        super().save(*args, **kwargs)
+
+    @property
+    def display_id(self):
+        """Returns a clean, human-readable order ID like #1001."""
+        return f"#{self.order_number}" if self.order_number else f"#{self.id.hex[:6].upper()}"
+
     def __str__(self):
-        return f"Order {self.id.hex[:8]} - {self.customer_name}"
+        return f"Order {self.display_id} - {self.customer_name}"
 
 
 class AuditLog(models.Model):
