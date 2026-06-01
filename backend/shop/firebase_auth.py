@@ -53,6 +53,7 @@ def get_or_create_user_from_firebase(decoded_token: dict) -> User:
 
 
 def serialize_user(user: User) -> dict:
+    role = getattr(getattr(user, 'profile', None), 'role', 'customer')
     return {
         'id': user.id,
         'username': user.username,
@@ -60,4 +61,5 @@ def serialize_user(user: User) -> dict:
         'first_name': user.first_name,
         'last_name': user.last_name,
         'is_staff': user.is_staff,
+        'role': role,
     }

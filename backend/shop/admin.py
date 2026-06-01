@@ -4,7 +4,7 @@ Admin configuration for shop models.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib import messages
-from .models import Product, PhotoPrintVariant, CustomDesign, Order, AuditLog
+from .models import Product, PhotoPrintVariant, CustomDesign, Order, AuditLog, UserProfile
 from .telegram import telegram_service
 
 
@@ -13,6 +13,18 @@ class PhotoPrintVariantInline(admin.TabularInline):
     model = PhotoPrintVariant
     extra = 1
     fields = ['size', 'stock_quantity', 'price_adjustment', 'is_active']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'role', 'email']
+    list_filter = ['role']
+    search_fields = ['user__email', 'user__username']
+    list_select_related = ['user']
+
+    def email(self, obj):
+        return obj.user.email
+    email.short_description = 'Email'
 
 
 @admin.register(Product)
@@ -110,7 +122,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     list_filter = ['status', 'payment_status', 'created_at']
     search_fields = ['customer_name', 'customer_email', 'customer_phone', 'id']
-    readonly_fields = ['created_at', 'updated_at', 'items_display', 'telegram_sent_display', 'customer_photos_display']
+    readonly_fields = ['created_at', 'updated_at', 'items_display', 'telegram_sent_display', 'customer_photos_display', 'stripe_checkout_session_id']
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     
