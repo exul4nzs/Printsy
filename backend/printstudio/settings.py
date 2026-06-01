@@ -132,6 +132,11 @@ REST_FRAMEWORK = {
 GCASH_NUMBER = os.getenv('GCASH_NUMBER', '09559054871')
 GCASH_NAME = os.getenv('GCASH_NAME', 'Printsy')
 
+# Stripe payment settings
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
+
 # Telegram Bot settings for order notifications
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_ADMIN_CHAT_ID = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '')
