@@ -192,3 +192,132 @@ class SeedDataTest(TestCase):
         except Exception as e:
             # Seed data may fail if products already exist
             self.assertIsNotNone(e)
+
+
+class AIEnhancementTest(TestCase):
+    """Test AI image enhancement service"""
+
+    def test_enhancement_service_import(self):
+        """Test that enhancement service can be imported"""
+        from shop.ai_enhancement import enhancement_service, EnhancementType
+        self.assertIsNotNone(enhancement_service)
+        self.assertEqual(len(list(EnhancementType)), 7)
+
+    def test_enhancement_type_enum(self):
+        """Test EnhancementType enum"""
+        from shop.ai_enhancement import EnhancementType
+        self.assertEqual(EnhancementType.AUTO.value, 'auto')
+        self.assertEqual(EnhancementType.SHARPNESS.value, 'sharpness')
+        self.assertEqual(EnhancementType.CONTRAST.value, 'contrast')
+
+
+class AIEnhancementAPITest(APITestCase):
+    """Test AI enhancement API endpoints."""
+
+    def setUp(self):
+        """Create a valid test image"""
+        from PIL import Image
+        import io
+        import base64
+        
+        # Create a simple test image
+        img = Image.new('RGB', (100, 100), color='red')
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        self.test_image_bytes = img_bytes.getvalue()
+        self.test_image_base64 = base64.b64encode(self.test_image_bytes).decode()
+
+    def test_enhance_image_endpoint_exists(self):
+        """Test that enhance image endpoint exists"""
+        url = reverse('enhance-image')
+        self.assertIsNotNone(url)
+
+    def test_enhance_image_with_auto_enhancement(self):
+        """Test POST /api/ai/enhance-image/ with auto enhancement"""
+        url = reverse('enhance-image')
+        data = {
+            "image": self.test_image_base64,
+            "enhancement_type": "auto",
+            "intensity": 1.0
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        self.assertIn('enhanced_image', response.data)
+
+    def test_enhance_image_with_missing_data(self):
+        """Test enhance image with missing image data"""
+        url = reverse('enhance-image')
+        data = {
+            "enhancement_type": "auto"
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+    def test_enhance_image_with_invalid_enhancement_type(self):
+        """Test enhance image with invalid enhancement type"""
+        url = reverse('enhance-image')
+        data = {
+            "image": self.test_image_base64,
+            "enhancement_type": "invalid_type"
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_enhance_image_with_invalid_intensity(self):
+        """Test enhance image with invalid intensity"""
+        url = reverse('enhance-image')
+        data = {
+            "image": self.test_image_base64,
+            "enhancement_type": "auto",
+            "intensity": 5.0  # Out of range
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_analyze_image_quality_endpoint(self):
+        """Test POST /api/ai/analyze-quality/"""
+        url = reverse('analyze-quality')
+        data = {
+            "image": self.test_image_base64
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('quality_score', response.data)
+        self.assertIn('suitable_for_printing', response.data)
+        self.assertIn('suggested_size', response.data)
+        self.assertTrue(0 <= response.data['quality_score'] <= 1)
+
+    def test_analyze_image_with_high_resolution(self):
+        """Test quality analysis with high resolution image"""
+        from PIL import Image
+        import io
+        import base64
+        
+        # Create high-res image
+        img = Image.new('RGB', (4000, 3000), color='blue')
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        high_res_base64 = base64.b64encode(img_bytes.getvalue()).decode()
+        
+        url = reverse('analyze-quality')
+        data = {"image": high_res_base64}
+        response = self.client.post(url, data, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(response.data['quality_score'], 0.7)
+        self.assertTrue(response.data['suitable_for_printing'])
+        self.assertEqual(response.data['image_properties']['megapixels'], 12.0)
+
+    def test_get_enhancement_options(self):
+        """Test GET /api/ai/enhancement-options/"""
+        url = reverse('enhancement-options')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('enhancement_types', response.data)
+        self.assertIn('intensity_range', response.data)
+        self.assertEqual(len(response.data['enhancement_types']), 6)
+        self.assertEqual(response.data['intensity_range']['min'], 0.5)
+        self.assertEqual(response.data['intensity_range']['max'], 2.0)
+
