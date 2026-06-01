@@ -1,11 +1,21 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Order, AuditLog
+from .models import Order, AuditLog, UserProfile
 from .telegram import telegram_service
 
 # ==========================================
 # OBSERVER PATTERN: Event-driven architecture
 # ==========================================
+
+@receiver(post_save, sender='auth.User')
+def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Automatically create a UserProfile with default 'customer' role
+    whenever a new Django User is created.
+    """
+    if created:
+        UserProfile.objects.create(user=instance, role='customer')
+
 
 @receiver(pre_save, sender=Order)
 def track_order_status_change(sender, instance, **kwargs):

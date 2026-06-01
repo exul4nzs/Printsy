@@ -5,10 +5,12 @@ from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import CustomDesign, Order, PhotoPrintVariant, Product
 from .patterns import OrderFactory
+from .permissions import IsAdminRole
 from .serializers import (
     CustomDesignSerializer,
     OrderSerializer,
@@ -74,22 +76,27 @@ class CustomDesignViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     """
     ViewSet for orders.
+    - List/Retrieve/Update/Delete: admin role required (via IsAdminRole).
+    - Create: open to any authenticated or guest request (handled below).
     """
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = [IsAdminRole]
 
     def get_queryset(self):
         """Only allow admin to see all orders."""
-        if self.request.user.is_staff:
+        role = getattr(getattr(self.request.user, 'profile', None), 'role', None)
+        if role == 'admin':
             return Order.objects.all()
-        # For non-admin, return empty (guest checkout doesn't track by user)
         return Order.objects.none()
 
     def create(self, request):
         """
         Create a new order using Factory Pattern.
-        Returns order info + GCash payment instructions.
+        Open to any user (authenticated or guest).
+        Bypasses IsAdminRole by not requiring it for POST.
         """
+        # Temporarily allow the create action for everyone
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -107,27 +114,31 @@ class OrderViewSet(viewsets.ModelViewSet):
             },
         }, status=status.HTTP_201_CREATED)
 
+    def get_permissions(self):
+        """
+        Allow unauthenticated POST (order creation),
+        but require IsAdminRole for all other actions.
+        """
+        if self.action == 'create':
+            return [AllowAny()]
+        return [IsAdminRole()]
+
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):
-        """Update order status (admin only)."""
-        if not request.user.is_staff:
-            return Response(
-                {'error': 'Admin access required'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
+        """Update order status (admin only — protected by IsAdminRole)."""
         order = self.get_object()
         new_status = request.data.get('status')
 
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.status = new_status
-            order.save()
-            return Response(self.get_serializer(order).data)
+        valid_statuses = [s[0] for s in Order.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return Response(
+                {'error': f'Invalid status. Choose from: {", ".join(valid_statuses)}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return Response(
-            {'error': 'Invalid status'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        order.status = new_status
+        order.save()
+        return Response(self.get_serializer(order).data)
 
 
 @api_view(['GET'])
