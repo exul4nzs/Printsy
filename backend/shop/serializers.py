@@ -7,6 +7,29 @@ from .models import Product, PhotoPrintVariant, CustomDesign, Order
 
 
 
+class AdminOrderSerializer(serializers.ModelSerializer):
+    """Serializer for the admin dashboard orders list."""
+    item_summary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'order_number', 'customer_name', 'customer_email',
+            'customer_phone', 'items', 'item_summary', 'total_amount',
+            'status', 'stripe_checkout_session_id', 'created_at', 'updated_at',
+        ]
+
+    def get_item_summary(self, obj):
+        """Return a human-readable summary of items in the order."""
+        items = obj.items if isinstance(obj.items, list) else []
+        parts = []
+        for item in items:
+            size = item.get('size', item.get('variant_id', '?'))
+            qty = item.get('quantity', 1)
+            parts.append(f"{size} × {qty}")
+        return ', '.join(parts) if parts else '—'
+
+
 class PhotoPrintVariantSerializer(serializers.ModelSerializer):
     """Serializer for photo print variants."""
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)

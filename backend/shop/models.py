@@ -99,8 +99,9 @@ class Order(models.Model):
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('processing', 'Processing'),
+        ('ready', 'Ready'),
         ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
+        ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
     
@@ -129,7 +130,8 @@ class Order(models.Model):
     items = models.JSONField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     
-    # Payment (manual GCash — no automated gateway)
+    # Payment (Stripe Checkout)
+    stripe_checkout_session_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
     payment_status = models.CharField(max_length=20, default='pending')
     
@@ -175,6 +177,29 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} at {self.created_at}"
+
+
+class UserProfile(models.Model):
+    """
+    Extended profile for Django users storing RBAC role.
+    """
+    ROLE_CHOICES = [
+        ('customer', 'Customer'),
+        ('admin', 'Admin'),
+    ]
+
+    user = models.OneToOneField(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='profile',
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='customer')
+
+    class Meta:
+        ordering = ['user__email']
+
+    def __str__(self):
+        return f"{self.user.email} ({self.get_role_display()})"
 
 
 class FeatureToggle(models.Model):
