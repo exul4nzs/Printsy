@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Product, PhotoPrintVariant, CustomDesign, Order } from '@/types';
+import { AdminStats, Order, Product, PhotoPrintVariant, CustomDesign } from '@/types';
 import type { AuthUser } from '@/lib/store';
 
 function resolveApiBaseUrl(): string {
@@ -98,5 +98,50 @@ export const createOrder = async (orderData: Partial<Order>): Promise<CreateOrde
   const response = await api.post('/orders/', orderData);
   return response.data;
 };
+
+// Stripe Checkout
+
+export interface CheckoutSessionResponse {
+  checkout_url: string;
+  session_id: string;
+}
+
+export async function createCheckoutSession(orderData: unknown): Promise<CheckoutSessionResponse> {
+  const response = await api.post<CheckoutSessionResponse>('/payments/create-checkout/', orderData);
+  return response.data;
+}
+
+// Admin API
+
+export interface AdminOrdersResponse {
+  results: Order[];
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export async function fetchAdminOrders(params?: {
+  status?: string;
+  search?: string;
+  date_from?: string;
+  date_to?: string;
+  size?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<AdminOrdersResponse> {
+  const response = await api.get<AdminOrdersResponse>('/admin/orders/', { params });
+  return response.data;
+}
+
+export async function updateOrderStatus(orderId: string, orderStatus: string): Promise<Order> {
+  const response = await api.patch<Order>(`/admin/orders/${orderId}/`, { status: orderStatus });
+  return response.data;
+}
+
+export async function fetchAdminStats(): Promise<AdminStats> {
+  const response = await api.get<AdminStats>('/admin/stats/');
+  return response.data;
+}
 
 export default api;

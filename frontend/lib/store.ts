@@ -9,6 +9,7 @@ export interface AuthUser {
   first_name: string;
   last_name: string;
   is_staff: boolean;
+  role: 'customer' | 'admin';
 }
 
 interface AuthState {

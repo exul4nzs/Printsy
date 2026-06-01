@@ -122,6 +122,14 @@ export interface OrderItem {
   customer_photos?: string[];
 }
 
+// Admin dashboard
+export interface AdminStats {
+  total_orders: number;
+  total_revenue: number;
+  by_status: Record<string, number>;
+  recent_orders: Order[];
+}
+
 // Clipart library
 export interface ClipartItem {
   id: string;
